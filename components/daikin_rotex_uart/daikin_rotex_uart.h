@@ -18,44 +18,33 @@ namespace daikin_rotex_uart {
 class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
     struct TEntityArguments {
         EntityBase* pEntity;
+        uint8_t registryID;
+        uint8_t offset;
         int convid;
-        int offset;
-        int registryID;
         int dataSize;
         int dataType;
     };
 
     using TEntityArgumentsList = std::list<TEntityArguments>;
 
-    /*class LabelDef
-    {
-    public:
-        int convid;
-        int offset;
-        int registryID;
-        int dataSize;
-        int dataType;
-        const char *label;
-        char *data;
-        char asString[30];
+ public:
+    using TVoidFunc = std::function<void()>;
 
-        LabelDef(){}
-        LabelDef(int registryIDp, int offsetp, int convidp, int dataSizep, int dataTypep, const char *labelp):
-            convid(convidp), offset(offsetp), registryID(registryIDp), dataSize(dataSizep), dataType(dataTypep), label(labelp) {}
-    };*/
-
-public:
     DaikinRotexUARTComponent();
     void setup() override;
     void loop() override;
 
     void set_entity(std::string const& name, TEntityArguments const& arg) { m_entities.push_back(arg); }
 
-    //void set_uart(esphome::uart::UARTComponent* pUartComponent) { m_pUartComponent = pUartComponent; }
-    //void set_component_source(std::string const& source) {}
+    void call_later(TVoidFunc lambda, uint32_t timeout = 0u) {
+        const uint32_t timestamp = millis();
+        m_later_calls.push_back({lambda, timestamp + timeout});
+    }
+
 private:
     TEntityArgumentsList m_entities;
     TMessageManager m_message_manager;
+    std::list<std::pair<TVoidFunc, uint32_t>> m_later_calls;
 };
 
 } // namespace daikin_rotex_uart

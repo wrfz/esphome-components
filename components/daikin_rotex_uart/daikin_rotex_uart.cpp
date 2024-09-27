@@ -21,18 +21,25 @@ void DaikinRotexUARTComponent::setup() {
     for (auto& entry : m_entities) {
         std::shared_ptr<TRequest> pRequest;
 
+        bool found = false;
+
         if (auto const& it = map.find(entry.registryID); it != map.end()) {
             pRequest = it->second;
+            found = true;
         } else {
             pRequest = std::make_shared<TRequest>(entry.registryID);
         }
 
+        call_later([found, entry, pRequest](){
+            ESP_LOGE(TAG, "add regId: %d, pRequest: %p, found: %d", entry.registryID, pRequest.get(), found);
+        }, 45000);
+
         m_message_manager.add({
             pRequest,
             entry.pEntity,
-            entry.convid,
-            entry.offset,
             entry.registryID,
+            entry.offset,
+            entry.convid,
             entry.dataSize,
             entry.dataType
         });
@@ -40,17 +47,21 @@ void DaikinRotexUARTComponent::setup() {
 }
 
 void DaikinRotexUARTComponent::loop() {
-    //ESP_LOGI(TAG, "loop");
+    //ESP_LOGI(TAG, "loop: %d", m_later_calls.size());
 
-    m_message_manager.sendNextRequest(this);
+    m_message_manager.sendNextRequest(*this);
 
-    std::array<uint8_t, 64> buffer {0};
-    uint32_t max_to_read = available();
-    if (max_to_read > 0) {
-        const auto to_read = std::min(max_to_read, sizeof(buffer));
-        read_array(buffer.data(), to_read);
+    if (available() > 0) {
+        m_message_manager.handleResponse(*this);
+    }
 
-        ESP_LOGI(TAG, "read n: %d, buffer: %s", to_read, Utils::to_hex(buffer).c_str());
+    for (auto it = m_later_calls.begin(); it != m_later_calls.end(); ) {
+        if (millis() > it->second) {
+            it->first();
+            it = m_later_calls.erase(it);
+        } else {
+            ++it;
+        }
     }
 }
 

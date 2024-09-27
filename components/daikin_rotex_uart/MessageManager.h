@@ -11,7 +11,8 @@ class TRequest;
 class TMessageManager {
 public:
     void add(TMessage const& message);
-    void sendNextRequest(uart::UARTDevice&);
+    bool sendNextRequest(uart::UARTDevice&);
+    void handleResponse(uart::UARTDevice&);
 private:
     std::shared_ptr<TRequest> getNextRequestToSend();
 
