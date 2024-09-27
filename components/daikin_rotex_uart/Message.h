@@ -35,14 +35,12 @@ public:
     static uint16_t getUnsignedValue(unsigned char *data, int dataSize, Endian endian);
     static short getSignedValue(unsigned char *data, int datasize, Endian endian);
 private:
-    static void convertTable300(unsigned char *data, int tableID, char *ret);
-    static void convertTable203(unsigned char *data, char *ret);
-    static void convertTable204(unsigned char *data, char *ret);
+    static void convertTable300(unsigned char *data, int tableID, std::string& str);
+    static void convertTable203(unsigned char *data, std::string& str);
     static double convertTable312(unsigned char *data);
-    static void convertTable315(unsigned char *data, char *ret);
-    static void convertTable316(unsigned char *data, char *ret);
-    static void convertTable200(unsigned char *data, char *ret);
-    static void convertTable217(unsigned char *data, char *ret);
+    static void convertTable315(unsigned char *data, std::string& str);
+    static void convertTable316(unsigned char *data, std::string& str);
+    static void convertTable200(unsigned char *data, std::string& str);
     static double convertPress2Temp(double data);
 
     std::shared_ptr<TRequest> m_pRequest;
@@ -52,7 +50,6 @@ private:
     int m_registryID;
     int m_dataSize;
     int m_dataType;
-    char m_asString[30];
 };
 
 } // namespace daikin_rotex_uart

@@ -1,4 +1,5 @@
 #include "esphome/components/daikin_rotex_uart/Message.h"
+#include "esphome/components/daikin_rotex_uart/utils.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/core/log.h"
 
@@ -28,51 +29,14 @@ TMessage::TMessage(
 {
 }
 
-size_t                   /* O - Length of string */
-strlcat(char *dst,       /* O - Destination string */
-        const char *src, /* I - Source string */
-        size_t size)     /* I - Size of destination string buffer */
-{
-    size_t srclen; /* Length of source string */
-    size_t dstlen; /* Length of destination string */
-
-    /*
-  * Figure out how much room is left...
-  */
-
-    dstlen = std::strlen(dst);
-    size -= dstlen + 1;
-
-    if (!size)
-        return (dstlen); /* No room, return immediately... */
-
-    /*
-  * Figure out how much room is needed...
-  */
-
-    srclen = std::strlen(src);
-
-    /*
-  * Copy the appropriate amount...
-  */
-
-    if (srclen > size)
-        srclen = size;
-
-    std::memcpy(dst + dstlen, src, srclen);
-    dst[dstlen + srclen] = '\0';
-
-    return (dstlen + srclen);
-}
-
 void TMessage::convert(uint8_t* data) {
-    m_asString[0] = {0};
+    std::string str;
     double dblData = std::numeric_limits<double>::quiet_NaN();
 
     switch (m_convId)
     {
     case 100:
-        strlcat(m_asString, (char*)data, m_dataSize);
+        str = std::string(data, data + m_dataSize);
         return;
     case 101:
         dblData = getSignedValue(data, m_dataSize, Endian::Little);
@@ -92,22 +56,6 @@ void TMessage::convert(uint8_t* data) {
     case 106:
         dblData = getSignedValue(data, m_dataSize, Endian::Big) * 0.1;
         break;
-    case 107:
-        dblData = getSignedValue(data, m_dataSize, Endian::Little) * 0.1;
-        if (dblData == -3276.8)
-        {
-            strcat(m_asString, "---");
-            return;
-        }
-        break;
-    case 108:
-        dblData = getSignedValue(data, m_dataSize, Endian::Big) * 0.1;
-        if (dblData == -3276.8)
-        {
-            strcat(m_asString, "---");
-            return;
-        }
-        break;
     case 109:
         dblData = getSignedValue(data, m_dataSize, Endian::Little) / 256.0 * 2.0;
         break;
@@ -123,28 +71,6 @@ void TMessage::convert(uint8_t* data) {
     case 113:
         dblData = getSignedValue(data, m_dataSize, Endian::Big) * 0.25;
         break;
-    case 114:
-    {
-        if (data[0] == 0 && data[1] == 128)
-        {
-            strcat(m_asString, "---");
-            return;
-        }
-        uint16_t num2 = (uint16_t)((int)data[1] * 256);
-        num2 |= (uint16_t)data[0];
-        if ((data[1] & 128) != 0)
-        {
-            num2 = ~(num2 - 1);
-        }
-        dblData = (num2 & 0xFF00) / 256.0;
-        dblData += (num2 & 255) / 256.0;
-        dblData *= 10.0;
-        if ((data[1] & 128) != 0)
-        {
-            dblData *= -1.0;
-        }
-        break;
-    }
     case 115:
         dblData = getSignedValue(data, m_dataSize, Endian::Little) / 2560.0;
         break;
@@ -157,19 +83,6 @@ void TMessage::convert(uint8_t* data) {
     case 118:
         dblData = getSignedValue(data, m_dataSize, Endian::Big) * 0.01;
         break;
-    case 119:
-    {
-        if (data[0] == 0 && data[1] == 128)
-        {
-            strcat(m_asString, "---");
-            return;
-        }
-        uint16_t num3 = (uint16_t)((int)data[1] * 256);
-        num3 |= (uint16_t)(data[0] & 127);
-        dblData = (num3 & 65280) / 256.0;
-        dblData += (num3 & 255) / 256.0;
-        break;
-    }
     case 151:
         dblData = getUnsignedValue(data, m_dataSize, Endian::Little);
         break;
@@ -210,18 +123,15 @@ void TMessage::convert(uint8_t* data) {
         dblData = (getUnsignedValue(data, m_dataSize, Endian::Little) & 0x3FFF);
         break;
     case 200:
-        convertTable200(data, m_asString);
+        convertTable200(data, str);
         return;
     case 203:
-        convertTable203(data, m_asString);
-        return;
-    case 204:
-        convertTable204(data, m_asString);
+        convertTable203(data, str);
         return;
     case 211:
         if (data == 0)
         {
-            strcat(m_asString, "OFF");
+            str = "OFF";
             return;
         }
         else
@@ -235,14 +145,10 @@ void TMessage::convert(uint8_t* data) {
     {
         int num = data[0] >> 4;
         int num2 = (int)(data[0] & 0xF);
-        sprintf(m_asString,"{0:%d}{1:%d}", num, num2);
+        str = Utils::format("{0:%d}{1:%d}", num, num2);
         return;
     }
 
-    case 201:
-    case 217:
-        convertTable217(data, m_asString);
-        return;
     case 300:
     case 301:
     case 302:
@@ -251,16 +157,16 @@ void TMessage::convert(uint8_t* data) {
     case 305:
     case 306:
     case 307:
-        convertTable300(data, m_convId, m_asString);
+        convertTable300(data, m_convId, str);
         return;
     case 312:
         dblData = convertTable312(data);
         break;
     case 315:
-        convertTable315(data, m_asString);
+        convertTable315(data, str);
         return;
     case 316:
-        convertTable316(data, m_asString);
+        convertTable316(data, str);
         return;
 
     // pressure to temp
@@ -290,67 +196,55 @@ void TMessage::convert(uint8_t* data) {
         break;
 
     default:
-        // conversion is not available
-        sprintf(m_asString, "Conv %d not avail.", m_convId);
+        str = Utils::format("Conv %d not avail.", m_convId);
         return;
     }
     if (!std::isnan(dblData))
     {
-        sprintf(m_asString, "%g", dblData);
-        ESP_LOGI("CONV", "name: %s, value: %s", m_pEntity->get_name().c_str(), m_asString);
+        str = Utils::format("%g", dblData);
+        ESP_LOGI("CONV", "name: %s, value: %s", m_pEntity->get_name().c_str(), str.c_str());
         if (sensor::Sensor* pSensor = dynamic_cast<sensor::Sensor*>(m_pEntity)) {
             pSensor->publish_state(dblData);
         }
     }
 }
 
-void TMessage::convertTable300(unsigned char *data, int tableID, char *ret)
+void TMessage::convertTable300(unsigned char *data, int tableID, std::string& str)
 {
     //Serial.printf("Bin Conv %02x with tableID %d \n", data[0], tableID);
     char b = 1;
     b = (char)(b << tableID % 10);
     if ((data[0] & b) > 0)
     {
-        strcat(ret, "ON");
+        str = "ON";
     }
     else
     {
-        strcat(ret, "OFF");
+        str = "OFF";
     }
     return;
 }
 
-void TMessage::convertTable203(unsigned char *data, char *ret)
+void TMessage::convertTable203(unsigned char *data, std::string& str)
 {
     switch (data[0])
     {
     case 0:
-        strcat(ret, "Normal");
+        str = "Normal";
         break;
     case 1:
-        strcat(ret, "Error");
+        str = "Error";
         break;
     case 2:
-        strcat(ret, "Warning");
+        str = "Warning";
         break;
     case 3:
-        strcat(ret, "Caution");
+        str = "Caution";
         break;
     default:
-        strcat(ret, "-");
+        str = "-";
         ;
     }
-}
-
-void TMessage::convertTable204(unsigned char *data, char *ret)
-{
-    char array[] = " ACEHFJLPU987654";
-    char array2[] = "0123456789AHCJEF";
-    int num = data[0] >> 4 & 0xF;
-    int num2 = (int)(data[0] & 0xF);
-    ret[0] = array[num];
-    ret[1] = array2[num2];
-    ret[2] = 0;
 }
 
 double TMessage::convertTable312(unsigned char *data)
@@ -363,93 +257,67 @@ double TMessage::convertTable312(unsigned char *data)
     return dblData;
 }
 
-void TMessage::convertTable315(unsigned char *data, char *ret)
+void TMessage::convertTable315(unsigned char *data, std::string& str)
 {
     char b = 240 & data[0];
     b = (char)(b >> 4);
     switch (b)
     {
     case 0:
-        strcat(ret, "Stop");
+        str = "Stop";
         break;
     case 1:
-        strcat(ret, "Heating");
+        str = "Heating";
         break;
     case 2:
-        strcat(ret, "Cooling");
+        str = "Cooling";
         break;
     case 3:
-        strcat(ret, "??");
+        str = "??";
         break;
     case 4:
-        strcat(ret, "DHW");
+        str = "DHW";
         break;
     case 5:
-        strcat(ret, "Heating + DHW");
+        str = "Heating + DHW";
         break;
     case 6:
-        strcat(ret, "Cooling + DHW");
+        str = "Cooling + DHW";
         break;
     default:
-        strcat(ret, "-");
+        str = "-";
     }
 }
 
-void TMessage::convertTable316(unsigned char *data, char *ret)
+void TMessage::convertTable316(unsigned char *data, std::string& str)
 {
-    char b = 240 & data[0];
-    b = (char)(b >> 4);
-    switch (b)
+    char byte = (data[0] >> 4) & 0xF;
+    switch (byte)
     {
     case 0:
-        strcat(ret, "H/P only");
+        str = "H/P only";
         break;
     case 1:
-        strcat(ret, "Hybrid");
+        str = "Hybrid";
         break;
     case 2:
-        strcat(ret, "Boiler only");
+        str = "Boiler only";
         break;
     default:
-        strcat(ret, "Unknown");
+        str = "Unknown";
     }
 }
 
-void TMessage::convertTable200(unsigned char *data, char *ret)
+void TMessage::convertTable200(unsigned char *data, std::string& str)
 {
     if (data[0] == 0)
     {
-        strcat(ret, "OFF");
+        str = "OFF";
     }
     else
     {
-        strcat(ret, "ON");
+        str = "ON";
     }
-}
-
-// 201
-void TMessage::convertTable217(unsigned char *data, char *ret)
-{
-    char r217[][30] = {"Fan Only",
-                        "Heating",
-                        "Cooling",
-                        "Auto",
-                        "Ventilation",
-                        "Auto Cool",
-                        "Auto Heat",
-                        "Dry",
-                        "Aux.",
-                        "Cooling Storage",
-                        "Heating Storage",
-                        "UseStrdThrm(cl)1",
-                        "UseStrdThrm(cl)2",
-                        "UseStrdThrm(cl)3",
-                        "UseStrdThrm(cl)4",
-                        "UseStrdThrm(ht)1",
-                        "UseStrdThrm(ht)2",
-                        "UseStrdThrm(ht)3",
-                        "UseStrdThrm(ht)4"};
-    sprintf(ret, r217[(int)data[0]]);
 }
 
 uint16_t TMessage::getUnsignedValue(unsigned char *data, int dataSize, Endian endian) {
