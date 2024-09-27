@@ -75,25 +75,25 @@ void TMessage::convert(uint8_t* data) {
         strlcat(m_asString, (char*)data, m_dataSize);
         return;
     case 101:
-        dblData = (double)getSignedValue(data, m_dataSize, 0);
+        dblData = getSignedValue(data, m_dataSize, Endian::Little);
         break;
     case 102:
-        dblData = (double)getSignedValue(data, m_dataSize, 1);
+        dblData = getSignedValue(data, m_dataSize, Endian::Big);
         break;
     case 103:
-        dblData = (double)getSignedValue(data, m_dataSize, 0) / 256.0;
+        dblData = getSignedValue(data, m_dataSize, Endian::Little) / 256.0;
         break;
     case 104:
-        dblData = (double)getSignedValue(data, m_dataSize, 1) / 256.0;
+        dblData = getSignedValue(data, m_dataSize, Endian::Big) / 256.0;
         break;
     case 105:
-        dblData = (double)getSignedValue(data, m_dataSize, 0) * 0.1;
+        dblData = getSignedValue(data, m_dataSize, Endian::Little) * 0.1;
         break;
     case 106:
-        dblData = (double)getSignedValue(data, m_dataSize, 1) * 0.1;
+        dblData = getSignedValue(data, m_dataSize, Endian::Big) * 0.1;
         break;
     case 107:
-        dblData = (double)getSignedValue(data, m_dataSize, 0) * 0.1;
+        dblData = getSignedValue(data, m_dataSize, Endian::Little) * 0.1;
         if (dblData == -3276.8)
         {
             strcat(m_asString, "---");
@@ -101,7 +101,7 @@ void TMessage::convert(uint8_t* data) {
         }
         break;
     case 108:
-        dblData = (double)getSignedValue(data, m_dataSize, 1) * 0.1;
+        dblData = getSignedValue(data, m_dataSize, Endian::Big) * 0.1;
         if (dblData == -3276.8)
         {
             strcat(m_asString, "---");
@@ -109,19 +109,19 @@ void TMessage::convert(uint8_t* data) {
         }
         break;
     case 109:
-        dblData = (double)getSignedValue(data, m_dataSize, 0) / 256.0 * 2.0;
+        dblData = getSignedValue(data, m_dataSize, Endian::Little) / 256.0 * 2.0;
         break;
     case 110:
-        dblData = (double)getSignedValue(data, m_dataSize, 1) / 256.0 * 2.0;
+        dblData = getSignedValue(data, m_dataSize, Endian::Big) / 256.0 * 2.0;
         break;
     case 111:
-        dblData = (double)getSignedValue(data, m_dataSize, 1) * 0.5;
+        dblData = getSignedValue(data, m_dataSize, Endian::Big) * 0.5;
         break;
     case 112:
-        dblData = (double)(getSignedValue(data, m_dataSize, 1) - 64) * 0.5;
+        dblData = (getSignedValue(data, m_dataSize, Endian::Big) - 64) * 0.5;
         break;
     case 113:
-        dblData = (double)getSignedValue(data, m_dataSize, 1) * 0.25;
+        dblData = getSignedValue(data, m_dataSize, Endian::Big) * 0.25;
         break;
     case 114:
     {
@@ -130,14 +130,14 @@ void TMessage::convert(uint8_t* data) {
             strcat(m_asString, "---");
             return;
         }
-        unsigned short num2 = (unsigned short)((int)data[1] * 256);
-        num2 |= (unsigned short)data[0];
+        uint16_t num2 = (uint16_t)((int)data[1] * 256);
+        num2 |= (uint16_t)data[0];
         if ((data[1] & 128) != 0)
         {
             num2 = ~(num2 - 1);
         }
-        dblData = (double)((num2 & 65280) / 256);
-        dblData += (double)(num2 & 255) / 256.0;
+        dblData = (num2 & 0xFF00) / 256.0;
+        dblData += (num2 & 255) / 256.0;
         dblData *= 10.0;
         if ((data[1] & 128) != 0)
         {
@@ -146,16 +146,16 @@ void TMessage::convert(uint8_t* data) {
         break;
     }
     case 115:
-        dblData = (double)getSignedValue(data, m_dataSize, 0) / 2560.0;
+        dblData = getSignedValue(data, m_dataSize, Endian::Little) / 2560.0;
         break;
     case 116:
-        dblData = (double)getSignedValue(data, m_dataSize, 1) / 2560.0;
+        dblData = getSignedValue(data, m_dataSize, Endian::Big) / 2560.0;
         break;
     case 117:
-        dblData = (double)getSignedValue(data, m_dataSize, 0) * 0.01;
+        dblData = getSignedValue(data, m_dataSize, Endian::Little) * 0.01;
         break;
     case 118:
-        dblData = (double)getSignedValue(data, m_dataSize, 1) * 0.01;
+        dblData = getSignedValue(data, m_dataSize, Endian::Big) * 0.01;
         break;
     case 119:
     {
@@ -164,50 +164,50 @@ void TMessage::convert(uint8_t* data) {
             strcat(m_asString, "---");
             return;
         }
-        unsigned short num3 = (unsigned short)((int)data[1] * 256);
-        num3 |= (unsigned short)(data[0] & 127);
-        dblData = (double)((num3 & 65280) / 256);
-        dblData += (double)(num3 & 255) / 256.0;
+        uint16_t num3 = (uint16_t)((int)data[1] * 256);
+        num3 |= (uint16_t)(data[0] & 127);
+        dblData = (num3 & 65280) / 256.0;
+        dblData += (num3 & 255) / 256.0;
         break;
     }
     case 151:
-        dblData = (double)getUnsignedValue(data, m_dataSize, 0);
+        dblData = getUnsignedValue(data, m_dataSize, Endian::Little);
         break;
     case 152:
-        dblData = (double)getUnsignedValue(data, m_dataSize, 1);
+        dblData = getUnsignedValue(data, m_dataSize, Endian::Big);
         break;
     case 153:
-        dblData = (double)getUnsignedValue(data, m_dataSize, 0) / 256.0;
+        dblData = getUnsignedValue(data, m_dataSize, Endian::Little) / 256.0;
         break;
     case 154:
-        dblData = (double)getUnsignedValue(data, m_dataSize, 1) / 256.0;
+        dblData = getUnsignedValue(data, m_dataSize, Endian::Big) / 256.0;
         break;
     case 155:
-        dblData = (double)getUnsignedValue(data, m_dataSize, 0) * 0.1;
+        dblData = getUnsignedValue(data, m_dataSize, Endian::Little) * 0.1;
         break;
     case 156:
-        dblData = (double)getUnsignedValue(data, m_dataSize, 1) * 0.1;
+        dblData = getUnsignedValue(data, m_dataSize, Endian::Big) * 0.1;
         break;
     case 157:
-        dblData = (double)getUnsignedValue(data, m_dataSize, 0) / 256.0 * 2.0;
+        dblData = getUnsignedValue(data, m_dataSize, Endian::Little) / 256.0 * 2.0;
         break;
     case 158:
-        dblData = (double)getUnsignedValue(data, m_dataSize, 1) / 256.0 * 2.0;
+        dblData = getUnsignedValue(data, m_dataSize, Endian::Big) / 256.0 * 2.0;
         break;
     case 161:
-        dblData = (double)getUnsignedValue(data, m_dataSize, 1) * 0.5;
+        dblData = getUnsignedValue(data, m_dataSize, Endian::Big) * 0.5;
         break;
     case 162:
-        dblData = (double)(getUnsignedValue(data, m_dataSize, 1) - 64) * 0.5;
+        dblData = (getUnsignedValue(data, m_dataSize, Endian::Big) - 64) * 0.5;
         break;
     case 163:
-        dblData = (double)getUnsignedValue(data, m_dataSize, 1) * 0.25;
+        dblData = getUnsignedValue(data, m_dataSize, Endian::Big) * 0.25;
         break;
     case 164:
-        dblData = (double)getUnsignedValue(data, m_dataSize, 1) * 5;
+        dblData = getUnsignedValue(data, m_dataSize, Endian::Big) * 5;
         break;
     case 165:
-        dblData = (double)(getUnsignedValue(data, m_dataSize, 0) & 16383);
+        dblData = (getUnsignedValue(data, m_dataSize, Endian::Little) & 0x3FFF);
         break;
     case 200:
         convertTable200(data, m_asString);
@@ -234,7 +234,7 @@ void TMessage::convert(uint8_t* data) {
     case 216:
     {
         int num = data[0] >> 4;
-        int num2 = (int)(data[0] & 15);
+        int num2 = (int)(data[0] & 0xF);
         sprintf(m_asString,"{0:%d}{1:%d}", num, num2);
         return;
     }
@@ -265,27 +265,27 @@ void TMessage::convert(uint8_t* data) {
 
     // pressure to temp
     case 401:
-        dblData = (double)getSignedValue(data, m_dataSize, 0);
+        dblData = getSignedValue(data, m_dataSize, Endian::Little);
         dblData = convertPress2Temp(dblData);
         break;
     case 402:
-        dblData = (double)getSignedValue(data, m_dataSize, 1);
+        dblData = getSignedValue(data, m_dataSize, Endian::Big);
         dblData = convertPress2Temp(dblData);
         break;
     case 403:
-        dblData = (double)getSignedValue(data, m_dataSize, 0) / 256.0;
+        dblData = getSignedValue(data, m_dataSize, Endian::Little) / 256.0;
         dblData = convertPress2Temp(dblData);
         break;
     case 404:
-        dblData = (double)getSignedValue(data, m_dataSize, 1) / 256.0;
+        dblData = getSignedValue(data, m_dataSize, Endian::Big) / 256.0;
         dblData = convertPress2Temp(dblData);
         break;
     case 405:
-        dblData = (double)getSignedValue(data, m_dataSize, 0) * 0.1;
+        dblData = getSignedValue(data, m_dataSize, Endian::Little) * 0.1;
         dblData = convertPress2Temp(dblData);
         break;
     case 406:
-        dblData = (double)getSignedValue(data, m_dataSize, 1) * 0.1;
+        dblData = getSignedValue(data, m_dataSize, Endian::Big) * 0.1;
         dblData = convertPress2Temp(dblData);
         break;
 
@@ -346,8 +346,8 @@ void TMessage::convertTable204(unsigned char *data, char *ret)
 {
     char array[] = " ACEHFJLPU987654";
     char array2[] = "0123456789AHCJEF";
-    int num = data[0] >> 4 & 15;
-    int num2 = (int)(data[0] & 15);
+    int num = data[0] >> 4 & 0xF;
+    int num2 = (int)(data[0] & 0xF);
     ret[0] = array[num];
     ret[1] = array2[num2];
     ret[2] = 0;
@@ -452,27 +452,27 @@ void TMessage::convertTable217(unsigned char *data, char *ret)
     sprintf(ret, r217[(int)data[0]]);
 }
 
-unsigned short TMessage::getUnsignedValue(unsigned char *data, int dataSize, int cnvflg) {
-    unsigned short result;
+uint16_t TMessage::getUnsignedValue(unsigned char *data, int dataSize, Endian endian) {
+    uint16_t result;
     if (dataSize == 1)
     {
-        result = (unsigned short)data[0];
+        result = (uint16_t)data[0];
     }
-    else if (cnvflg == 0)
+    else if (endian == Endian::Little)
     {
-        result = ((unsigned short)(data[1] << 8) | (unsigned short)data[0]);
+        result = ((uint16_t)(data[1] << 8) | (uint16_t)data[0]);
     }
-    else
+    else // Big Endian
     {
-        result = ((unsigned short)(data[0] << 8) | (unsigned short)data[1]);
+        result = ((uint16_t)(data[0] << 8) | (uint16_t)data[1]);
     }
     return result;
 }
 
-short TMessage::getSignedValue(unsigned char *data, int datasize, int cnvflg) {
-    unsigned short num = getUnsignedValue(data, datasize, cnvflg);
+short TMessage::getSignedValue(unsigned char *data, int datasize, Endian endian) {
+    uint16_t num = getUnsignedValue(data, datasize, endian);
     short result = (short)num;
-    if ((num & 32768) != 0)
+    if ((num & 0x8000) != 0)
     {
         num = ~num;
         num += 1;

@@ -10,6 +10,11 @@ class EntityBase;
 namespace daikin_rotex_uart {
 
 class TMessage {
+    enum class Endian {
+        Little,
+        Big
+    };
+
 public:
     TMessage(
         std::shared_ptr<TRequest> pRequest,
@@ -27,8 +32,8 @@ public:
     EntityBase* getEntity() const { return m_pEntity; }
 
     void convert(uint8_t* data);
-    static unsigned short getUnsignedValue(unsigned char *data, int dataSize, int cnvflg);
-    static short getSignedValue(unsigned char *data, int datasize, int cnvflg);
+    static uint16_t getUnsignedValue(unsigned char *data, int dataSize, Endian endian);
+    static short getSignedValue(unsigned char *data, int datasize, Endian endian);
 private:
     static void convertTable300(unsigned char *data, int tableID, char *ret);
     static void convertTable203(unsigned char *data, char *ret);
