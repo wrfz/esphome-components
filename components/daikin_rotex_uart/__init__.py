@@ -14,7 +14,7 @@ DaikinRotexUARTComponent = daikin_rotex_uart_ns.class_(
 
 sensor_configuration = [
     {
-        "name": "operation_mode", # ???  geht nicht
+        "name": "operation_mode",       # doesn't work for HPSU compact 508 / 8kW
         "registryID": 0x10,
         "offset": 0,
         "convid": 217,
@@ -22,7 +22,7 @@ sensor_configuration = [
         "dataType": -1
     },
     {
-        "name": "defrost_opreration",   # geht nicht
+        "name": "defrost_opreration",   # doesn't work for HPSU compact 508 / 8kW
         "registryID": 0x10,
         "offset": 1,
         "convid": 304,
@@ -66,19 +66,19 @@ sensor_configuration = [
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
-        "name": "voltage_n_phase",
+        "name": "inv_primary_current",
         "registryID": 0x21,
-        "offset": 4,
-        "convid": 101,
+        "offset": 0,
+        "convid": 105,
         "dataSize": 2,
         "dataType": -1,
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
-        "name": "inv_primary_current",
+        "name": "voltage_n_phase",
         "registryID": 0x21,
-        "offset": 0,
-        "convid": 105,
+        "offset": 4,
+        "convid": 101,
         "dataSize": 2,
         "dataType": -1,
         "state_class": STATE_CLASS_MEASUREMENT
@@ -110,7 +110,6 @@ sensor_configuration = [
         "dataType": -1,
         "state_class": STATE_CLASS_MEASUREMENT
     },
-
     {
         "name": "leaving_water_temp_before_buh_r1t",
         "registryID": 0x61,
@@ -172,7 +171,7 @@ sensor_configuration = [
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
-        "name": "pressure",     # geht nicht
+        "name": "pressure",     # doesn't work for HPSU compact 508 / 8kW
         "registryID": 0x62,
         "offset": 15,
         "convid": 105,

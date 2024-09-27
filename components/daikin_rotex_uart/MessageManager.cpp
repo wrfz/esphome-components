@@ -8,7 +8,7 @@
 namespace esphome {
 namespace daikin_rotex_uart {
 
-static const char* TAG = "message_manager";
+static const char* TAG = "daikin-uart";
 
 void TMessageManager::add(TMessage const& message) {
     m_messages.push_back(message);
@@ -27,13 +27,12 @@ void TMessageManager::handleResponse(uart::UARTDevice& device) {
     const auto to_read = std::min(static_cast<uint32_t>(device.available()), sizeof(buffer));
     device.read_array(buffer.data(), to_read);
 
-    ESP_LOGI(TAG, "read n: %d, buffer: %s", to_read, Utils::to_hex(buffer).c_str());
+    ESP_LOGI(TAG, "rx: %s", Utils::to_hex(buffer, to_read).c_str());
 
     uint8_t registryID = buffer[1];
     uint8_t offset = 3;
     for (auto& message : m_messages) {
         if (registryID == message.getRegistryID()) {
-            //ESP_LOGE(TAG, "handle: registryID: %d", registryID);
             uint8_t* input = buffer.data();
             input += message.getOffset() + offset;
             message.convert(input);
@@ -48,7 +47,6 @@ std::shared_ptr<TRequest> TMessageManager::getNextRequestToSend() {
 
     for (auto& message : m_messages) {
         std::shared_ptr<TRequest> pRequest = message.getRequest();
-        //ESP_LOGE(TAG, "name: %s, inProgress: %d", message.getEntity()->get_name().c_str(), pRequest->isInProgress());
         if (pRequest->isInProgress()) {
             return std::shared_ptr<TRequest>();
         }
@@ -56,7 +54,6 @@ std::shared_ptr<TRequest> TMessageManager::getNextRequestToSend() {
 
     for (auto& message : m_messages) {
         std::shared_ptr<TRequest> pRequest = message.getRequest();
-        //ESP_LOGE(TAG, "name: %s, isRequestRequired: %d", message.getEntity()->get_name().c_str(), pRequest->isRequestRequired());
         if (pRequest->isRequestRequired()) {
             return pRequest;
         }

@@ -5,7 +5,7 @@
 namespace esphome {
 namespace daikin_rotex_uart {
 
-static const char* TAG = "request";
+static const char* TAG = "daikin-uart";
 
 TRequest::TRequest(uint8_t registryID)
 : m_registryID(registryID)
@@ -14,23 +14,21 @@ TRequest::TRequest(uint8_t registryID)
 {
 }
 
-uint8_t TRequest::getCRC(std::array<uint8_t, 4> const& src, uint32_t len) {
-    uint8_t b = 0;
+uint8_t TRequest::getCRC(std::array<uint8_t, 4> const& data, uint32_t len) {
+    uint8_t byte = 0;
     for (int i = 0; i < len; i++) {
-        b += src[i];
+        byte += data[i];
     }
-    return ~b;
+    return ~byte;
 }
 
 bool TRequest::send(uart::UARTDevice& device) {
-    std::array<uint8_t, 4> prep {0x03, 0x40, m_registryID, 0x00};
-    prep[3] = getCRC(prep, 3);
-    const size_t queryLength = 4;
+    std::array<uint8_t, 4> buffer {0x03, 0x40, m_registryID, 0x00};
+    buffer[3] = getCRC(buffer, 3);
 
-    ESP_LOGI(TAG, "write: %s", Utils::to_hex(prep).c_str());
+    ESP_LOGI(TAG, "tx: %s", Utils::to_hex(buffer).c_str());
 
-    device.flush();
-    device.write_array(prep.data(), queryLength);
+    device.write_array(buffer.data(), sizeof(buffer));
     device.flush();
 
     m_last_request_timestamp = millis();

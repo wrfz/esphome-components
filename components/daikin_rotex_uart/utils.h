@@ -14,7 +14,7 @@ namespace daikin_rotex_uart {
 class Utils {
 public:
     template<std::size_t Size>
-    static std::string to_hex(std::array<uint8_t, Size> const& data);
+    static std::string to_hex(std::array<uint8_t, Size> const& data, std::size_t maxlen = Size);
 };
 
 }

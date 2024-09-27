@@ -20,7 +20,7 @@ public:
     bool isRequestRequired() const;
     void setHandled();
 private:
-    static uint8_t getCRC(std::array<uint8_t, 4> const& src, uint32_t len);
+    static uint8_t getCRC(std::array<uint8_t, 4> const& data, uint32_t len);
 
     uint8_t m_registryID;
     uint32_t m_last_request_timestamp;

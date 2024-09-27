@@ -30,10 +30,6 @@ void DaikinRotexUARTComponent::setup() {
             pRequest = std::make_shared<TRequest>(entry.registryID);
         }
 
-        call_later([found, entry, pRequest](){
-            ESP_LOGE(TAG, "add regId: %d, pRequest: %p, found: %d", entry.registryID, pRequest.get(), found);
-        }, 45000);
-
         m_message_manager.add({
             pRequest,
             entry.pEntity,
@@ -47,8 +43,6 @@ void DaikinRotexUARTComponent::setup() {
 }
 
 void DaikinRotexUARTComponent::loop() {
-    //ESP_LOGI(TAG, "loop: %d", m_later_calls.size());
-
     m_message_manager.sendNextRequest(*this);
 
     if (available() > 0) {

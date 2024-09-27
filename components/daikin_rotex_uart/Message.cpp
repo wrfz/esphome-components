@@ -360,7 +360,6 @@ double TMessage::convertTable312(unsigned char *data)
     {
         dblData *= -1.0;
     }
-    // Serial.printf("convertTable312 %02x -> %f \n", data[0], dblData);
     return dblData;
 }
 
