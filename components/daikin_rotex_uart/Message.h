@@ -35,12 +35,6 @@ public:
     static uint16_t getUnsignedValue(unsigned char *data, int dataSize, Endian endian);
     static short getSignedValue(unsigned char *data, int datasize, Endian endian);
 private:
-    static void convertTable300(unsigned char *data, int tableID, std::string& str);
-    static void convertTable203(unsigned char *data, std::string& str);
-    static double convertTable312(unsigned char *data);
-    static void convertTable315(unsigned char *data, std::string& str);
-    static void convertTable316(unsigned char *data, std::string& str);
-    static void convertTable200(unsigned char *data, std::string& str);
     static double convertPress2Temp(double data);
 
     std::shared_ptr<TRequest> m_pRequest;
