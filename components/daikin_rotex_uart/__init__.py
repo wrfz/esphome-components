@@ -3,6 +3,7 @@ import esphome.config_validation as cv
 from esphome.const import *
 from esphome.components import sensor, uart
 from esphome.components.uart import UARTComponent
+from enum import Enum
 
 CODEOWNERS = ["@MrSuicideParrot"]
 DEPENDENCIES = ["uart"]
@@ -11,31 +12,34 @@ daikin_rotex_uart_ns = cg.esphome_ns.namespace("daikin_rotex_uart")
 DaikinRotexUARTComponent = daikin_rotex_uart_ns.class_(
     "DaikinRotexUARTComponent", sensor.Sensor, cg.Component, uart.UARTDevice
 )
+EndianLittle = daikin_rotex_uart_ns.enum('TMessage::Endian::Little')
+EndianBig = daikin_rotex_uart_ns.enum('TMessage::Endian::Big')
+
+class Endian(Enum):
+    LITTLE = 1
+    BIG = 2
 
 sensor_configuration = [
     {
         "name": "operation_mode",       # doesn't work for HPSU compact 508 / 8kW
         "registryID": 0x10,
         "offset": 0,
-        "convid": 217,
         "dataSize": 1,
-        "dataType": -1
     },
     {
         "name": "defrost_opreration",   # doesn't work for HPSU compact 508 / 8kW
         "registryID": 0x10,
         "offset": 1,
-        "convid": 304,
         "dataSize": 1,
-        "dataType": -1
     },
     {
         "name": "outdoor_air_temp_r1t",
         "registryID": 0x20,
         "offset": 0,
-        "convid": 105,
+        "signed": True,
         "dataSize": 2,
-        "dataType": 1,
+        "endian": Endian.LITTLE,
+        "divider": 10,
         "device_class": DEVICE_CLASS_TEMPERATURE,
         "unit_of_measurement": UNIT_CELSIUS,
         "accuracy_decimals": 1,
@@ -45,9 +49,10 @@ sensor_configuration = [
         "name": "discharge_pipe_temp",
         "registryID": 0x20,
         "offset": 4,
-        "convid": 105,
+        "signed": True,
         "dataSize": 2,
-        "dataType": 1,
+        "endian": Endian.LITTLE,
+        "divider": 10,
         "device_class": DEVICE_CLASS_TEMPERATURE,
         "unit_of_measurement": UNIT_CELSIUS,
         "accuracy_decimals": 1,
@@ -57,9 +62,10 @@ sensor_configuration = [
         "name": "heat_exchanger_mid_temp",
         "registryID": 0x20,
         "offset": 8,
-        "convid": 105,
+        "signed": True,
         "dataSize": 2,
-        "dataType": 1,
+        "endian": Endian.LITTLE,
+        "divider": 10,
         "device_class": DEVICE_CLASS_TEMPERATURE,
         "unit_of_measurement": UNIT_CELSIUS,
         "accuracy_decimals": 1,
@@ -69,54 +75,54 @@ sensor_configuration = [
         "name": "inv_primary_current",
         "registryID": 0x21,
         "offset": 0,
-        "convid": 105,
+        "signed": True,
         "dataSize": 2,
-        "dataType": -1,
+        "endian": Endian.LITTLE,
+        "divider": 10,
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
         "name": "voltage_n_phase",
         "registryID": 0x21,
         "offset": 4,
-        "convid": 101,
+        "signed": True,
         "dataSize": 2,
-        "dataType": -1,
+        "endian": Endian.LITTLE,
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
         "name": "inv_frequency_rps",
         "registryID": 0x30,
         "offset": 0,
-        "convid": 152,
+        "signed": False,
         "dataSize": 1,
-        "dataType": -1,
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
         "name": "fan_2_step",
         "registryID": 0x30,
         "offset": 1,
-        "convid": 211,
+        "signed": False,
         "dataSize": 1,
-        "dataType": -1,
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
         "name": "expansion_valve_pls",
         "registryID": 0x30,
         "offset": 3,
-        "convid": 151,
+        "signed": False,
         "dataSize": 2,
-        "dataType": -1,
+        "endian": Endian.LITTLE,
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
         "name": "leaving_water_temp_before_buh_r1t",
         "registryID": 0x61,
         "offset": 2,
-        "convid": 105,
+        "signed": True,
         "dataSize": 2,
-        "dataType": 1,
+        "endian": Endian.LITTLE,
+        "divider": 10,
         "device_class": DEVICE_CLASS_TEMPERATURE,
         "unit_of_measurement": UNIT_CELSIUS,
         "accuracy_decimals": 1,
@@ -126,9 +132,10 @@ sensor_configuration = [
         "name": "leaving_water_temp_after_buh_r2t",
         "registryID": 0x61,
         "offset": 4,
-        "convid": 105,
+        "signed": True,
         "dataSize": 2,
-        "dataType": 1,
+        "endian": Endian.LITTLE,
+        "divider": 10,
         "device_class": DEVICE_CLASS_TEMPERATURE,
         "unit_of_measurement": UNIT_CELSIUS,
         "accuracy_decimals": 1,
@@ -138,9 +145,10 @@ sensor_configuration = [
         "name": "refrig_temp_liquid_side_r3t",
         "registryID": 0x61,
         "offset": 6,
-        "convid": 105,
+        "signed": True,
         "dataSize": 2,
-        "dataType": 1,
+        "endian": Endian.LITTLE,
+        "divider": 10,
         "device_class": DEVICE_CLASS_TEMPERATURE,
         "unit_of_measurement": UNIT_CELSIUS,
         "accuracy_decimals": 1,
@@ -150,9 +158,10 @@ sensor_configuration = [
         "name": "inlet_water_temp_r4t",
         "registryID": 0x61,
         "offset": 8,
-        "convid": 105,
+        "signed": True,
         "dataSize": 2,
-        "dataType": 1,
+        "endian": Endian.LITTLE,
+        "divider": 10,
         "device_class": DEVICE_CLASS_TEMPERATURE,
         "unit_of_measurement": UNIT_CELSIUS,
         "accuracy_decimals": 1,
@@ -162,9 +171,10 @@ sensor_configuration = [
         "name": "dhw_tank_temp_r5t",
         "registryID": 0x61,
         "offset": 10,
-        "convid": 105,
+        "signed": True,
         "dataSize": 2,
-        "dataType": 1,
+        "endian": Endian.LITTLE,
+        "divider": 10,
         "device_class": DEVICE_CLASS_TEMPERATURE,
         "unit_of_measurement": UNIT_CELSIUS,
         "accuracy_decimals": 1,
@@ -174,9 +184,9 @@ sensor_configuration = [
         "name": "pressure",     # doesn't work for HPSU compact 508 / 8kW
         "registryID": 0x62,
         "offset": 15,
-        "convid": 105,
+        "signed": True,
         "dataSize": 2,
-        "dataType": 2
+        "endian": Endian.LITTLE
     },
 ]
 
@@ -228,7 +238,8 @@ async def to_code(config):
                     entity,
                     sens_conf.get("registryID"),
                     sens_conf.get("offset"),
-                    sens_conf.get("convid"),
+                    sens_conf.get("signed"),
                     sens_conf.get("dataSize"),
-                    sens_conf.get("dataType"),
+                    EndianLittle if sens_conf.get("endian") == Endian.LITTLE else EndianBig,
+                    sens_conf.get("divider", 1.0),
                 ]))

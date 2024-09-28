@@ -15,147 +15,30 @@ TMessage::TMessage(
     EntityBase* pEntity,
     uint8_t registryID,
     uint8_t offset,
-    int convid,
+    bool isSigned,
     int dataSize,
-    int dataType
+    Endian endian,
+    double divider
 )
 : m_pRequest(pRequest)
 , m_pEntity(pEntity)
-, m_convId(convid)
-, m_offset(offset)
 , m_registryID(registryID)
+, m_offset(offset)
+, m_signed(isSigned)
 , m_dataSize(dataSize)
-, m_dataType(dataType)
+, m_endian(endian)
+, m_divider(divider)
 {
 }
 
 void TMessage::convert(uint8_t* data) {
     std::string str;
-    double dblData = std::numeric_limits<double>::quiet_NaN();
+    double dblData = m_signed ?
+        getSignedValue(data, m_dataSize, m_endian) :
+        getUnsignedValue(data, m_dataSize, m_endian);
 
-    switch (m_convId)
-    {
-    case 100:
-        str = std::string(data, data + m_dataSize);
-        return;
-    case 101:
-        dblData = getSignedValue(data, m_dataSize, Endian::Little);
-        break;
-    case 102:
-        dblData = getSignedValue(data, m_dataSize, Endian::Big);
-        break;
-    case 103:
-        dblData = getSignedValue(data, m_dataSize, Endian::Little) / 256.0;
-        break;
-    case 104:
-        dblData = getSignedValue(data, m_dataSize, Endian::Big) / 256.0;
-        break;
-    case 105:
-        dblData = getSignedValue(data, m_dataSize, Endian::Little) * 0.1;
-        break;
-    case 106:
-        dblData = getSignedValue(data, m_dataSize, Endian::Big) * 0.1;
-        break;
-    case 109:
-        dblData = getSignedValue(data, m_dataSize, Endian::Little) / 256.0 * 2.0;
-        break;
-    case 110:
-        dblData = getSignedValue(data, m_dataSize, Endian::Big) / 256.0 * 2.0;
-        break;
-    case 111:
-        dblData = getSignedValue(data, m_dataSize, Endian::Big) * 0.5;
-        break;
-    case 112:
-        dblData = (getSignedValue(data, m_dataSize, Endian::Big) - 64) * 0.5;
-        break;
-    case 113:
-        dblData = getSignedValue(data, m_dataSize, Endian::Big) * 0.25;
-        break;
-    case 115:
-        dblData = getSignedValue(data, m_dataSize, Endian::Little) / 2560.0;
-        break;
-    case 116:
-        dblData = getSignedValue(data, m_dataSize, Endian::Big) / 2560.0;
-        break;
-    case 117:
-        dblData = getSignedValue(data, m_dataSize, Endian::Little) * 0.01;
-        break;
-    case 118:
-        dblData = getSignedValue(data, m_dataSize, Endian::Big) * 0.01;
-        break;
-    case 151:
-        dblData = getUnsignedValue(data, m_dataSize, Endian::Little);
-        break;
-    case 152:
-        dblData = getUnsignedValue(data, m_dataSize, Endian::Big);
-        break;
-    case 153:
-        dblData = getUnsignedValue(data, m_dataSize, Endian::Little) / 256.0;
-        break;
-    case 154:
-        dblData = getUnsignedValue(data, m_dataSize, Endian::Big) / 256.0;
-        break;
-    case 155:
-        dblData = getUnsignedValue(data, m_dataSize, Endian::Little) * 0.1;
-        break;
-    case 156:
-        dblData = getUnsignedValue(data, m_dataSize, Endian::Big) * 0.1;
-        break;
-    case 157:
-        dblData = getUnsignedValue(data, m_dataSize, Endian::Little) / 256.0 * 2.0;
-        break;
-    case 158:
-        dblData = getUnsignedValue(data, m_dataSize, Endian::Big) / 256.0 * 2.0;
-        break;
-    case 161:
-        dblData = getUnsignedValue(data, m_dataSize, Endian::Big) * 0.5;
-        break;
-    case 162:
-        dblData = (getUnsignedValue(data, m_dataSize, Endian::Big) - 64) * 0.5;
-        break;
-    case 163:
-        dblData = getUnsignedValue(data, m_dataSize, Endian::Big) * 0.25;
-        break;
-    case 164:
-        dblData = getUnsignedValue(data, m_dataSize, Endian::Big) * 5;
-        break;
-    case 165:
-        dblData = (getUnsignedValue(data, m_dataSize, Endian::Little) & 0x3FFF);
-        break;
-    case 211:
-        dblData = (uint)(double)data[0];
-        break;
+    dblData /= m_divider;
 
-    // pressure to temp
-    case 401:
-        dblData = getSignedValue(data, m_dataSize, Endian::Little);
-        dblData = convertPress2Temp(dblData);
-        break;
-    case 402:
-        dblData = getSignedValue(data, m_dataSize, Endian::Big);
-        dblData = convertPress2Temp(dblData);
-        break;
-    case 403:
-        dblData = getSignedValue(data, m_dataSize, Endian::Little) / 256.0;
-        dblData = convertPress2Temp(dblData);
-        break;
-    case 404:
-        dblData = getSignedValue(data, m_dataSize, Endian::Big) / 256.0;
-        dblData = convertPress2Temp(dblData);
-        break;
-    case 405:
-        dblData = getSignedValue(data, m_dataSize, Endian::Little) * 0.1;
-        dblData = convertPress2Temp(dblData);
-        break;
-    case 406:
-        dblData = getSignedValue(data, m_dataSize, Endian::Big) * 0.1;
-        dblData = convertPress2Temp(dblData);
-        break;
-
-    default:
-        str = Utils::format("Conv %d not avail.", m_convId);
-        return;
-    }
     if (!std::isnan(dblData))
     {
         str = Utils::format("%g", dblData);
@@ -193,17 +76,6 @@ short TMessage::getSignedValue(unsigned char *data, int datasize, Endian endian)
         result = (short)((int)num * -1);
     }
     return result;
-}
-
-double TMessage::convertPress2Temp(double data){//assuming R32 gaz
-    double num = -2.6989493795556E-07 * data * data * data * data * data * data;
-    double num2 = 4.26383417104661E-05 * data * data * data * data * data;
-    double num3 = -0.00262978346547749 * data * data * data * data;
-    double num4 = 0.0805858127503585 * data * data * data;
-    double num5 = -1.31924457284073 * data * data;
-    double num6 = 13.4157368435437 * data;
-    double num7 = -51.1813342993155;
-    return num + num2 + num3 + num4 + num5 + num6 + num7;
 }
 
 } // namespace daikin_rotex_uart

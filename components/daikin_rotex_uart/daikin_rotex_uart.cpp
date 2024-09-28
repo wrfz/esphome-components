@@ -35,9 +35,10 @@ void DaikinRotexUARTComponent::setup() {
             entry.pEntity,
             entry.registryID,
             entry.offset,
-            entry.convid,
+            entry.isSigned,
             entry.dataSize,
-            entry.dataType
+            entry.endian,
+            entry.divider
         });
     }
 }

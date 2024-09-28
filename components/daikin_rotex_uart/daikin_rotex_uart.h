@@ -16,13 +16,16 @@ namespace uart {
 namespace daikin_rotex_uart {
 
 class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
+    using Endian = TMessage::Endian;
+
     struct TEntityArguments {
         EntityBase* pEntity;
         uint8_t registryID;
         uint8_t offset;
-        int convid;
+        bool isSigned;
         int dataSize;
-        int dataType;
+        Endian endian;
+        double divider;
     };
 
     using TEntityArgumentsList = std::list<TEntityArguments>;

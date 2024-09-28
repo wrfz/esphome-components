@@ -10,20 +10,21 @@ class EntityBase;
 namespace daikin_rotex_uart {
 
 class TMessage {
+public:
     enum class Endian {
         Little,
         Big
     };
 
-public:
     TMessage(
         std::shared_ptr<TRequest> pRequest,
         EntityBase* pEntity,
         uint8_t registryID,
         uint8_t offset,
-        int convid,
+        bool isSigned,
         int dataSize,
-        int dataType
+        Endian endian,
+        double divider
     );
 
     std::shared_ptr<TRequest> getRequest() { return m_pRequest; }
@@ -35,15 +36,14 @@ public:
     static uint16_t getUnsignedValue(unsigned char *data, int dataSize, Endian endian);
     static short getSignedValue(unsigned char *data, int datasize, Endian endian);
 private:
-    static double convertPress2Temp(double data);
-
     std::shared_ptr<TRequest> m_pRequest;
     EntityBase* m_pEntity;
-    int m_convId;
-    int m_offset;
     int m_registryID;
+    int m_offset;
+    bool m_signed;
     int m_dataSize;
-    int m_dataType;
+    Endian m_endian;
+    double m_divider;
 };
 
 } // namespace daikin_rotex_uart
