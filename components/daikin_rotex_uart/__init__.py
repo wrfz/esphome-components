@@ -19,6 +19,8 @@ class Endian(Enum):
     LITTLE = 1
     BIG = 2
 
+UNIT_REVOLUTIONS_PER_SECOND = "rps"
+
 sensor_configuration = [
     {
         "name": "operation_mode",       # doesn't work for HPSU compact 508 / 8kW
@@ -96,23 +98,28 @@ sensor_configuration = [
         "offset": 0,
         "signed": False,
         "dataSize": 1,
+        "unit_of_measurement": UNIT_REVOLUTIONS_PER_SECOND,
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
-        "name": "fan_2_step",
+        "name": "fan_speed",
         "registryID": 0x30,
         "offset": 1,
         "signed": False,
         "dataSize": 1,
+        "divider": 0.1,
+        "unit_of_measurement": UNIT_REVOLUTIONS_PER_MINUTE,
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
-        "name": "expansion_valve_pls",
+        "name": "expansion_valve",
         "registryID": 0x30,
         "offset": 3,
         "signed": False,
         "dataSize": 2,
+        "divider": 450.0 / 100.0,
         "endian": Endian.LITTLE,
+        "unit_of_measurement": UNIT_PERCENT,
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
@@ -181,7 +188,15 @@ sensor_configuration = [
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
-        "name": "pressure",     # doesn't work for HPSU compact 508 / 8kW
+        "name": "refrigerant_pressure",     # doesn't work for HPSU compact 508 / 8kW
+        "registryID": 0x62,
+        "offset": 15,
+        "signed": True,
+        "dataSize": 2,
+        "endian": Endian.LITTLE
+    },
+    {
+        "name": "refrigerant_temperature",     # doesn't work for HPSU compact 508 / 8kW
         "registryID": 0x62,
         "offset": 15,
         "signed": True,
