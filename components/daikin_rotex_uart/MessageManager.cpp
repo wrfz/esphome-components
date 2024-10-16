@@ -23,21 +23,41 @@ bool TMessageManager::sendNextRequest(uart::UARTDevice& device) {
 }
 
 void TMessageManager::handleResponse(uart::UARTDevice& device) {
-    std::array<uint8_t, 64> buffer {0};
-    const auto to_read = std::min(static_cast<uint32_t>(device.available()), sizeof(buffer));
-    device.read_array(buffer.data(), to_read);
+    m_buffer.read(device);
 
-    ESP_LOGI(TAG, "rx: %s", Utils::to_hex(buffer, to_read).c_str());
+    if (m_buffer.size() >= 2 && m_buffer[0] == 0x15 && m_buffer[1] == 0xEA) {
+        //ESP_LOGI(TAG, "Invalid response: %s", Utils::to_hex(m_buffer.data(), 2).c_str());
+        m_buffer.shift(2);
+        return;
+    }
 
-    uint8_t registryID = buffer[1];
-    uint8_t offset = 3;
-    for (auto& message : m_messages) {
-        if (registryID == message.getRegistryID()) {
-            uint8_t* input = buffer.data();
-            input += message.getOffset() + offset;
-            message.convert(input);
-            std::shared_ptr<TRequest> pRequest = message.getRequest();
-            pRequest->setHandled();
+    if (m_buffer.size() >= 3) {
+        if (m_buffer[0] != 0x40) {
+            ESP_LOGE(TAG, "Invalid response: %s", Utils::to_hex(m_buffer.data(), m_buffer.size()).c_str());
+            m_buffer.clear();
+            return;
+        }
+
+        uint8_t registryID = m_buffer[1];
+        uint8_t length = m_buffer[2];
+
+        if (m_buffer.size() >= (2 + length)) {
+            const uint8_t header_size = 3;
+            for (auto& message : m_messages) {
+                if (registryID == message.getRegistryID()) {
+                    uint8_t* input = m_buffer.data().data();
+                    const uint8_t message_offset = header_size + message.getOffset();
+                    if (message_offset < 3 || (message_offset + message.getDataSize()) > m_buffer.size()) {
+                        ESP_LOGE(TAG, "Invalid offset! message_offset: %d, message.data_size: %d, buffer.size: %d", message_offset, message.getDataSize(), m_buffer.size());
+                        return;
+                    }
+                    input += message_offset;
+                    message.convert(input);
+                    std::shared_ptr<TRequest> pRequest = message.getRequest();
+                    pRequest->setHandled();
+                }
+            }
+            m_buffer.shift(2 + length);
         }
     }
 }

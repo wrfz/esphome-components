@@ -22,7 +22,7 @@ public:
         uint8_t registryID,
         uint8_t offset,
         bool isSigned,
-        int dataSize,
+        uint8_t dataSize,
         Endian endian,
         double divider
     );
@@ -30,6 +30,7 @@ public:
     std::shared_ptr<TRequest> getRequest() { return m_pRequest; }
     int getRegistryID() const { return m_registryID; }
     uint8_t getOffset() const { return m_offset; }
+    uint8_t getDataSize() const { return m_dataSize; }
     EntityBase* getEntity() const { return m_pEntity; }
 
     void convert(uint8_t* data);

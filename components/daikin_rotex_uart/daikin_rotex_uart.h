@@ -23,7 +23,7 @@ class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
         uint8_t registryID;
         uint8_t offset;
         bool isSigned;
-        int dataSize;
+        uint8_t dataSize;
         Endian endian;
         double divider;
     };

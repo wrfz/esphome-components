@@ -10,13 +10,15 @@
 namespace esphome {
 namespace daikin_rotex_uart {
 
+static const char* TAG = "daikin-uart";
+
 TMessage::TMessage(
     std::shared_ptr<TRequest> pRequest,
     EntityBase* pEntity,
     uint8_t registryID,
     uint8_t offset,
     bool isSigned,
-    int dataSize,
+    uint8_t dataSize,
     Endian endian,
     double divider
 )
@@ -42,7 +44,7 @@ void TMessage::convert(uint8_t* data) {
     if (!std::isnan(dblData))
     {
         str = Utils::format("%g", dblData);
-        ESP_LOGI("CONV", "name: %s, value: %s", m_pEntity->get_name().c_str(), str.c_str());
+        ESP_LOGI(TAG, "%s: %s", m_pEntity->get_name().c_str(), str.c_str());
         if (sensor::Sensor* pSensor = dynamic_cast<sensor::Sensor*>(m_pEntity)) {
             pSensor->publish_state(dblData);
         }

@@ -11,33 +11,27 @@ daikin_rotex_uart:
   id: rotext_hpsu_uart
   uart_id: uart_bus
   entities:
-    outdoor_air_temp_r1t:
-      name: Outdoor Air Temp
-    discharge_pipe_temp:
-      name: Temperatur nach Kältemittelverdichter
-    heat_exchanger_mid_temp:
-      name: Lamellenwärmetauscher Temperatur
-    inv_primary_current:
-      name: INV Primary Current (A)
-    voltage_n_phase:
-      name: Voltage N Phase (V)
-    inv_frequency_rps:
-      name: Kompressor Drehzahl
-    fan_speed:
-      name: Ventilatordrehzahl
+    t_liquid:
+      name: Temperatur Flüssigkeitsleitung
     expansion_valve:
       name: Expansionsventil
-    leaving_water_temp_before_buh_r1t:
-      name: Leaving Water Temp before BUH (R1T)
-    leaving_water_temp_after_buh_r2t:
-      name: Leaving Water Temp after BUH (R2T)
-    refrig_temp_liquid_side_r3t:
-      name: Refrig Temp Liquid Side (R3T)
-    inlet_water_temp_r4t:
-      name: Inlet Water Temp (R4T)
+    heat_exchanger_mid_temp:
+      name: Lamellenwärmetauscher Temperatur
+    fan_speed:
+      name: Ventilatordrehzahl
+    discharge_pipe_temp:
+      name: Temperatur nach Kältemittelverdichter
+    inv_frequency_rps:
+      name: Kompressor Drehzahl
+    inv_primary_current:
+      name: INV Primary Current (A)
     dhw_tank_temp_r5t:
-      name: DHW tank temp (R5T)
-    refrigerant_pressure:
-      name: Kältemittel Druck
-    refrigerant_temperature:
-      name: Kältemittel Temperatur
+      name: DHW tank temp
+    leaving_water_temp_before_buh:
+      name: Vorlauftemeratur (TV)
+    leaving_water_temp_after_buh:
+      name: Vorlauftemeratur (TVBH)
+    inlet_water_temp_r4t:
+      name: Rücklauftemperatur
+    outdoor_air_temp_r1t:
+      name: Outdoor Air Temp

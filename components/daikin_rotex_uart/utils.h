@@ -16,6 +16,8 @@ public:
     template<std::size_t Size>
     static std::string to_hex(std::array<uint8_t, Size> const& data, std::size_t maxlen = Size);
 
+    static std::string to_hex(uint8_t const* data, std::size_t maxlen);
+
     template<typename... Args>
     static std::string format(const std::string& format, Args... args) {
         const auto size = std::snprintf(nullptr, 0, format.c_str(), args...) + 1;

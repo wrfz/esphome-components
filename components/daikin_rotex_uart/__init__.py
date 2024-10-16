@@ -20,19 +20,21 @@ class Endian(Enum):
     BIG = 2
 
 UNIT_REVOLUTIONS_PER_SECOND = "rps"
+UNIT_PRESSURE_BAR = "bar"
 
 sensor_configuration = [
     {
-        "name": "operation_mode",       # doesn't work for HPSU compact 508 / 8kW
+        "name": "target_liquefaction_pressure",
         "registryID": 0x10,
-        "offset": 0,
-        "dataSize": 1,
-    },
-    {
-        "name": "defrost_opreration",   # doesn't work for HPSU compact 508 / 8kW
-        "registryID": 0x10,
-        "offset": 1,
-        "dataSize": 1,
+        "offset": 6,
+        "signed": True,
+        "dataSize": 2,
+        "endian": Endian.LITTLE,
+        "divider": 26.0 + (1.0 / 24.0),
+        "unit_of_measurement": UNIT_PRESSURE_BAR,
+        "accuracy_decimals": 1,
+        "state_class": STATE_CLASS_MEASUREMENT,
+        "icon": "mdi:arrow-collapse-all"
     },
     {
         "name": "outdoor_air_temp_r1t",
@@ -84,22 +86,14 @@ sensor_configuration = [
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
-        "name": "voltage_n_phase",
-        "registryID": 0x21,
-        "offset": 4,
-        "signed": True,
-        "dataSize": 2,
-        "endian": Endian.LITTLE,
-        "state_class": STATE_CLASS_MEASUREMENT
-    },
-    {
         "name": "inv_frequency_rps",
         "registryID": 0x30,
         "offset": 0,
         "signed": False,
         "dataSize": 1,
         "unit_of_measurement": UNIT_REVOLUTIONS_PER_SECOND,
-        "state_class": STATE_CLASS_MEASUREMENT
+        "state_class": STATE_CLASS_MEASUREMENT,
+        "icon": "mdi:fan"
     },
     {
         "name": "fan_speed",
@@ -109,7 +103,8 @@ sensor_configuration = [
         "dataSize": 1,
         "divider": 0.1,
         "unit_of_measurement": UNIT_REVOLUTIONS_PER_MINUTE,
-        "state_class": STATE_CLASS_MEASUREMENT
+        "state_class": STATE_CLASS_MEASUREMENT,
+        "icon": "mdi:fan"
     },
     {
         "name": "expansion_valve",
@@ -120,10 +115,11 @@ sensor_configuration = [
         "divider": 450.0 / 100.0,
         "endian": Endian.LITTLE,
         "unit_of_measurement": UNIT_PERCENT,
-        "state_class": STATE_CLASS_MEASUREMENT
+        "state_class": STATE_CLASS_MEASUREMENT,
+        "icon": "mdi:pipe-valve"
     },
     {
-        "name": "leaving_water_temp_before_buh_r1t",
+        "name": "leaving_water_temp_before_buh",
         "registryID": 0x61,
         "offset": 2,
         "signed": True,
@@ -136,7 +132,7 @@ sensor_configuration = [
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
-        "name": "leaving_water_temp_after_buh_r2t",
+        "name": "leaving_water_temp_after_buh",
         "registryID": 0x61,
         "offset": 4,
         "signed": True,
@@ -149,7 +145,7 @@ sensor_configuration = [
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
-        "name": "refrig_temp_liquid_side_r3t",
+        "name": "t_liquid",
         "registryID": 0x61,
         "offset": 6,
         "signed": True,
@@ -186,23 +182,7 @@ sensor_configuration = [
         "unit_of_measurement": UNIT_CELSIUS,
         "accuracy_decimals": 1,
         "state_class": STATE_CLASS_MEASUREMENT
-    },
-    {
-        "name": "refrigerant_pressure",     # doesn't work for HPSU compact 508 / 8kW
-        "registryID": 0x62,
-        "offset": 15,
-        "signed": True,
-        "dataSize": 2,
-        "endian": Endian.LITTLE
-    },
-    {
-        "name": "refrigerant_temperature",     # doesn't work for HPSU compact 508 / 8kW
-        "registryID": 0x62,
-        "offset": 15,
-        "signed": True,
-        "dataSize": 2,
-        "endian": Endian.LITTLE
-    },
+    }
 ]
 
 CONF_ENTITIES = "entities"

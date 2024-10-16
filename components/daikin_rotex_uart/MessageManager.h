@@ -1,6 +1,7 @@
 #pragma once
 
 #include "esphome/components/daikin_rotex_uart/Message.h"
+#include "esphome/components/daikin_rotex_uart/buffer.h"
 #include <vector>
 
 namespace esphome {
@@ -17,6 +18,7 @@ private:
     std::shared_ptr<TRequest> getNextRequestToSend();
 
     std::vector<TMessage> m_messages;
+    TBuffer m_buffer;
 };
 
 } // namespace daikin_rotex_uart
