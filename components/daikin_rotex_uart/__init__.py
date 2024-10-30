@@ -91,7 +91,8 @@ sensor_configuration = [
         "offset": 0,
         "signed": False,
         "dataSize": 1,
-        "unit_of_measurement": UNIT_REVOLUTIONS_PER_SECOND,
+        "divider": 1.0 / 60.0,
+        "unit_of_measurement": UNIT_REVOLUTIONS_PER_MINUTE,
         "state_class": STATE_CLASS_MEASUREMENT,
         "icon": "mdi:fan"
     },
