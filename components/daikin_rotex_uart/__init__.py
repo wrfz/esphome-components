@@ -22,6 +22,24 @@ class Endian(Enum):
 UNIT_REVOLUTIONS_PER_SECOND = "rps"
 UNIT_PRESSURE_BAR = "bar"
 
+RRLQ008CAV3 = "RRLQ008CAV3"
+RRLQ011CAW1 = "RRLQ011CAW1"
+
+OUTDOOR_UNIT = {
+    RRLQ008CAV3: 1,
+    RRLQ011CAW1: 2,
+}
+
+current_outdoor_unit = None
+
+fan_divider = {
+    RRLQ008CAV3: 0.1,
+    RRLQ011CAW1: 0.1 * 0.1
+}
+
+def get_fan_divider():
+    return fan_divider.get(current_outdoor_unit)
+
 sensor_configuration = [
     {
         "name": "target_liquefaction_pressure",
@@ -102,7 +120,7 @@ sensor_configuration = [
         "offset": 1,
         "signed": False,
         "dataSize": 1,
-        "divider": 0.1,
+        "divider": get_fan_divider,
         "unit_of_measurement": UNIT_REVOLUTIONS_PER_MINUTE,
         "state_class": STATE_CLASS_MEASUREMENT,
         "icon": "mdi:fan"
@@ -186,7 +204,13 @@ sensor_configuration = [
     }
 ]
 
+def validate_setoutdoor_unit(value):
+    global current_outdoor_unit
+    current_outdoor_unit = value
+    return value
+
 CONF_ENTITIES = "entities"
+CONF_OUTDOR_UNIT = "outdoor_unit"
 
 entity_schemas = {}
 for sensor_conf in sensor_configuration:
@@ -205,6 +229,7 @@ CONFIG_SCHEMA = cv.Schema(
     {
         cv.GenerateID(): cv.declare_id(DaikinRotexUARTComponent),
         cv.Required(CONF_UART_ID): cv.use_id(UARTComponent),
+        cv.Required(CONF_OUTDOR_UNIT): cv.ensure_list(cv.enum(OUTDOOR_UNIT), validate_setoutdoor_unit),
         cv.Required(CONF_ENTITIES): cv.Schema(
             entity_schemas
         )
@@ -230,6 +255,10 @@ async def to_code(config):
         for sens_conf in sensor_configuration:
             if yaml_sensor_conf := entities.get(sens_conf.get("name")):
                 entity = await sensor.new_sensor(yaml_sensor_conf)
+
+                divider = sens_conf.get("divider", 1.0)
+                if callable(divider):
+                    divider = divider()
                 cg.add(var.set_entity(sens_conf.get("name"), [
                     entity,
                     sens_conf.get("registryID"),
@@ -237,5 +266,5 @@ async def to_code(config):
                     sens_conf.get("signed"),
                     sens_conf.get("dataSize"),
                     EndianLittle if sens_conf.get("endian") == Endian.LITTLE else EndianBig,
-                    sens_conf.get("divider", 1.0),
+                    divider,
                 ]))
