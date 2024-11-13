@@ -76,6 +76,14 @@ text_sensor:
     ssid:
       name: ESP Connected SSID
 
+button:
+  - platform: restart
+    name: "Rotex ESP Restart"
+  - platform: template
+    name: Dump Partitions
+    on_press:
+      - lambda: dump_partitions();
+
 uart:
   id: uart_bus
   tx_pin: GPIO12
