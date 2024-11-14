@@ -4,6 +4,7 @@
 #include "esphome/core/hal.h"
 #include "esphome/core/entity_base.h"
 #include <algorithm>
+#include <list>
 
 namespace esphome {
 namespace daikin_rotex_uart {
@@ -64,6 +65,12 @@ void TMessageManager::handleResponse(uart::UARTDevice& device) {
 
 std::shared_ptr<TRequest> TMessageManager::getNextRequestToSend() {
     const uint32_t timestamp = millis();
+    static uint32_t last_dump_timestamp = 0;
+
+    if (timestamp > (last_dump_timestamp + 1000)) {
+        last_dump_timestamp = timestamp;
+        dumpRequests();
+    }
 
     for (auto& message : m_messages) {
         std::shared_ptr<TRequest> pRequest = message.getRequest();
@@ -75,10 +82,29 @@ std::shared_ptr<TRequest> TMessageManager::getNextRequestToSend() {
     for (auto& message : m_messages) {
         std::shared_ptr<TRequest> pRequest = message.getRequest();
         if (pRequest->isRequestRequired()) {
+            dumpRequests();
             return pRequest;
         }
     }
     return std::shared_ptr<TRequest>();
+}
+
+void TMessageManager::dumpRequests() {
+    std::string dump;
+    std::list<uint8_t> used;
+    for (auto& message : m_messages) {
+        std::shared_ptr<TRequest> pRequest = message.getRequest();
+
+        const bool contains = (std::find(used.begin(), used.end(), pRequest->getRegistryId()) != used.end());
+        if (!contains) {
+            used.push_back(pRequest->getRegistryId());
+            if (!dump.empty()) {
+                dump += "|";
+            }
+            dump += Utils::format("%s:%d:%d", Utils::to_hex(pRequest->getRegistryId()).c_str(), pRequest->isInProgress(), pRequest->isRequestRequired());
+        }
+    }
+    ESP_LOGI(TAG, "%s", dump.c_str());
 }
 
 } // namespace daikin_rotex_uart

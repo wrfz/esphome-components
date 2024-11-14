@@ -15,6 +15,7 @@ public:
     bool sendNextRequest(uart::UARTDevice&);
     void handleResponse(uart::UARTDevice&);
 private:
+    void dumpRequests();
     std::shared_ptr<TRequest> getNextRequestToSend();
 
     std::vector<TMessage> m_messages;

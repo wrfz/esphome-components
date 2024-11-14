@@ -20,7 +20,9 @@ TMessage::TMessage(
     bool isSigned,
     uint8_t dataSize,
     Endian endian,
-    double divider
+    double divider,
+    THandleFunc handle_lambda,
+    bool handle_lambda_set
 )
 : m_pRequest(pRequest)
 , m_pEntity(pEntity)
@@ -30,23 +32,37 @@ TMessage::TMessage(
 , m_dataSize(dataSize)
 , m_endian(endian)
 , m_divider(divider)
+, m_handle_lambda(handle_lambda)
+, m_handle_lambda_set(handle_lambda_set)
 {
 }
 
 void TMessage::convert(uint8_t* data) {
-    std::string str;
-    double dblData = m_signed ?
-        getSignedValue(data, m_dataSize, m_endian) :
-        getUnsignedValue(data, m_dataSize, m_endian);
-
-    dblData /= m_divider;
-
-    if (!std::isnan(dblData))
+    if (m_handle_lambda_set)
     {
-        str = Utils::format("%g", dblData);
+        const uint16_t value = m_handle_lambda(data);
+        std::string str = Utils::format("%d", value);
         ESP_LOGI(TAG, "%s: %s", m_pEntity->get_name().c_str(), str.c_str());
         if (sensor::Sensor* pSensor = dynamic_cast<sensor::Sensor*>(m_pEntity)) {
-            pSensor->publish_state(dblData);
+            pSensor->publish_state(value);
+        }
+    }
+    else
+    {
+        std::string str;
+        double dblData = m_signed ?
+            getSignedValue(data, m_dataSize, m_endian) :
+            getUnsignedValue(data, m_dataSize, m_endian);
+
+        dblData /= m_divider;
+
+        if (!std::isnan(dblData))
+        {
+            str = Utils::format("%g", dblData);
+            ESP_LOGI(TAG, "%s: %s", m_pEntity->get_name().c_str(), str.c_str());
+            if (sensor::Sensor* pSensor = dynamic_cast<sensor::Sensor*>(m_pEntity)) {
+                pSensor->publish_state(dblData);
+            }
         }
     }
 }

@@ -1,6 +1,8 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome.const import *
+from esphome.core import Lambda
+from esphome.cpp_types import std_ns
 from esphome.components import sensor, uart
 from esphome.components.uart import UARTComponent
 from enum import Enum
@@ -137,6 +139,36 @@ sensor_configuration = [
         "state_class": STATE_CLASS_MEASUREMENT,
         "icon": "mdi:pipe-valve"
     },
+
+    {
+        "name": "buh_step_1",
+        "registryID": 0x60,
+        "offset": 12,
+        "handle_lambda": """
+            return (data[0] & 0x08) > 0;
+        """
+    },
+    {
+        "name": "buh_step_2",
+        "registryID": 0x60,
+        "offset": 12,
+        "handle_lambda": """
+            return (data[0] & 0x10) > 0;
+        """
+    },
+    {
+        "name": "buh_step_bsh",
+        "registryID": 0x60,
+        "offset": 12,
+        "handle_lambda": """
+            return (data[0] & 0x20) > 0;
+        """
+    },
+
+#{0x60,12,305,1,-1,"Heizstab Speicher (BSH)"},
+#{0x60,12,304,1,-1,"Heizstab Stufe 1"},
+#{0x60,12,303,1,-1,"Heizstab Stufe 2"},
+
     {
         "name": "leaving_water_temp_before_buh",
         "registryID": 0x61,
@@ -247,6 +279,7 @@ FINAL_VALIDATE_SCHEMA = uart.final_validate_device_schema(
 )
 
 async def to_code(config):
+    u8_ptr = std_ns.class_("uint8_t*")
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
@@ -256,6 +289,14 @@ async def to_code(config):
             if yaml_sensor_conf := entities.get(sens_conf.get("name")):
                 entity = await sensor.new_sensor(yaml_sensor_conf)
 
+                async def handle_lambda():
+                    lamb = str(sens_conf.get("handle_lambda")) if "handle_lambda" in sens_conf else "return 0;"
+                    return await cg.process_lambda(
+                        Lambda(lamb),
+                        [(u8_ptr, "data")],
+                        return_type=cg.uint16,
+                    )
+
                 divider = sens_conf.get("divider", 1.0)
                 if callable(divider):
                     divider = divider()
@@ -263,8 +304,10 @@ async def to_code(config):
                     entity,
                     sens_conf.get("registryID"),
                     sens_conf.get("offset"),
-                    sens_conf.get("signed"),
-                    sens_conf.get("dataSize"),
+                    sens_conf.get("signed", True),
+                    sens_conf.get("dataSize", 0),
                     EndianLittle if sens_conf.get("endian") == Endian.LITTLE else EndianBig,
                     divider,
+                    await handle_lambda(),
+                    "handle_lambda" in sens_conf
                 ]))

@@ -2,6 +2,7 @@
 
 #include "esphome/components/daikin_rotex_uart/request.h"
 #include <memory>
+#include <functional>
 
 namespace esphome {
 
@@ -15,6 +16,7 @@ public:
         Little,
         Big
     };
+    using THandleFunc = std::function<uint16_t(uint8_t*)>;
 
     TMessage(
         std::shared_ptr<TRequest> pRequest,
@@ -24,7 +26,9 @@ public:
         bool isSigned,
         uint8_t dataSize,
         Endian endian,
-        double divider
+        double divider,
+        THandleFunc handle_lambda,
+        bool handle_lambda_set
     );
 
     std::shared_ptr<TRequest> getRequest() { return m_pRequest; }
@@ -45,6 +49,8 @@ private:
     int m_dataSize;
     Endian m_endian;
     double m_divider;
+    THandleFunc m_handle_lambda;
+    bool m_handle_lambda_set;
 };
 
 } // namespace daikin_rotex_uart

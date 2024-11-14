@@ -26,6 +26,8 @@ class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
         uint8_t dataSize;
         Endian endian;
         double divider;
+        TMessage::THandleFunc handle_lambda;
+        bool handle_lambda_set;
     };
 
     using TEntityArgumentsList = std::list<TEntityArguments>;
