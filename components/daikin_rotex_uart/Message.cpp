@@ -1,5 +1,6 @@
 #include "esphome/components/daikin_rotex_uart/Message.h"
 #include "esphome/components/daikin_rotex_uart/utils.h"
+#include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/core/log.h"
 
@@ -38,18 +39,15 @@ TMessage::TMessage(
 }
 
 void TMessage::convert(uint8_t* data) {
+    double value = 0.0;
+    bool value_valid = false;
     if (m_handle_lambda_set)
     {
         const uint16_t value = m_handle_lambda(data);
-        std::string str = Utils::format("%d", value);
-        ESP_LOGI(TAG, "%s: %s", m_pEntity->get_name().c_str(), str.c_str());
-        if (sensor::Sensor* pSensor = dynamic_cast<sensor::Sensor*>(m_pEntity)) {
-            pSensor->publish_state(value);
-        }
+        value_valid = true;
     }
     else
     {
-        std::string str;
         double dblData = m_signed ?
             getSignedValue(data, m_dataSize, m_endian) :
             getUnsignedValue(data, m_dataSize, m_endian);
@@ -58,11 +56,18 @@ void TMessage::convert(uint8_t* data) {
 
         if (!std::isnan(dblData))
         {
-            str = Utils::format("%g", dblData);
-            ESP_LOGI(TAG, "%s: %s", m_pEntity->get_name().c_str(), str.c_str());
-            if (sensor::Sensor* pSensor = dynamic_cast<sensor::Sensor*>(m_pEntity)) {
-                pSensor->publish_state(dblData);
-            }
+            value = dblData;
+            value_valid = true;
+        }
+    }
+
+    if (value_valid) {
+        std::string str = Utils::format("%d", value);
+        ESP_LOGI(TAG, "%s: %s", m_pEntity->get_name().c_str(), str.c_str());
+        if (sensor::Sensor* pSensor = dynamic_cast<sensor::Sensor*>(m_pEntity)) {
+            pSensor->publish_state(value);
+        } else if (binary_sensor::BinarySensor* pSensor = dynamic_cast<binary_sensor::BinarySensor*>(m_pEntity)) {
+            pSensor->publish_state(value);
         }
     }
 }

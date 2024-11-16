@@ -3,16 +3,17 @@ import esphome.config_validation as cv
 from esphome.const import *
 from esphome.core import Lambda
 from esphome.cpp_types import std_ns
-from esphome.components import sensor, uart
+from esphome.components import sensor, binary_sensor, uart
 from esphome.components.uart import UARTComponent
 from enum import Enum
 
-CODEOWNERS = ["@MrSuicideParrot"]
+CODEOWNERS = ["@wrfz"]
+AUTO_LOAD = ["binary_sensor", "sensor"]
 DEPENDENCIES = ["uart"]
 
 daikin_rotex_uart_ns = cg.esphome_ns.namespace("daikin_rotex_uart")
 DaikinRotexUARTComponent = daikin_rotex_uart_ns.class_(
-    "DaikinRotexUARTComponent", sensor.Sensor, cg.Component, uart.UARTDevice
+    "DaikinRotexUARTComponent", cg.Component, uart.UARTDevice
 )
 EndianLittle = daikin_rotex_uart_ns.enum('TMessage::Endian::Little')
 EndianBig = daikin_rotex_uart_ns.enum('TMessage::Endian::Big')
@@ -44,6 +45,17 @@ def get_fan_divider():
 
 sensor_configuration = [
     {
+        "type": "binary_sensor",
+        "name": "pressure_equalization", # Druckausgleich
+        "registryID": 0x10,
+        "offset": 1,
+        "handle_lambda": """
+            return (data[0] & 0x04) > 0;
+        """,
+        "icon": "mdi:car-brake-low-pressure"
+    },
+    {
+        "type": "sensor",
         "name": "target_liquefaction_pressure",
         "registryID": 0x10,
         "offset": 6,
@@ -57,6 +69,7 @@ sensor_configuration = [
         "icon": "mdi:arrow-collapse-all"
     },
     {
+        "type": "sensor",
         "name": "outdoor_air_temp_r1t",
         "registryID": 0x20,
         "offset": 0,
@@ -70,6 +83,7 @@ sensor_configuration = [
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
+        "type": "sensor",
         "name": "discharge_pipe_temp",
         "registryID": 0x20,
         "offset": 4,
@@ -83,6 +97,7 @@ sensor_configuration = [
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
+        "type": "sensor",
         "name": "heat_exchanger_mid_temp",
         "registryID": 0x20,
         "offset": 8,
@@ -96,6 +111,7 @@ sensor_configuration = [
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
+        "type": "sensor",
         "name": "inv_primary_current",
         "registryID": 0x21,
         "offset": 0,
@@ -106,6 +122,7 @@ sensor_configuration = [
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
+        "type": "sensor",
         "name": "inv_frequency_rps",
         "registryID": 0x30,
         "offset": 0,
@@ -117,6 +134,7 @@ sensor_configuration = [
         "icon": "mdi:fan"
     },
     {
+        "type": "sensor",
         "name": "fan_speed",
         "registryID": 0x30,
         "offset": 1,
@@ -128,6 +146,7 @@ sensor_configuration = [
         "icon": "mdi:fan"
     },
     {
+        "type": "sensor",
         "name": "expansion_valve",
         "registryID": 0x30,
         "offset": 3,
@@ -139,8 +158,8 @@ sensor_configuration = [
         "state_class": STATE_CLASS_MEASUREMENT,
         "icon": "mdi:pipe-valve"
     },
-
     {
+        "type": "sensor",
         "name": "buh_step_1",
         "registryID": 0x60,
         "offset": 12,
@@ -149,6 +168,7 @@ sensor_configuration = [
         """
     },
     {
+        "type": "sensor",
         "name": "buh_step_2",
         "registryID": 0x60,
         "offset": 12,
@@ -157,6 +177,7 @@ sensor_configuration = [
         """
     },
     {
+        "type": "sensor",
         "name": "buh_step_bsh",
         "registryID": 0x60,
         "offset": 12,
@@ -164,12 +185,8 @@ sensor_configuration = [
             return (data[0] & 0x20) > 0;
         """
     },
-
-#{0x60,12,305,1,-1,"Heizstab Speicher (BSH)"},
-#{0x60,12,304,1,-1,"Heizstab Stufe 1"},
-#{0x60,12,303,1,-1,"Heizstab Stufe 2"},
-
     {
+        "type": "sensor",
         "name": "leaving_water_temp_before_buh",
         "registryID": 0x61,
         "offset": 2,
@@ -183,6 +200,7 @@ sensor_configuration = [
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
+        "type": "sensor",
         "name": "leaving_water_temp_after_buh",
         "registryID": 0x61,
         "offset": 4,
@@ -196,6 +214,7 @@ sensor_configuration = [
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
+        "type": "sensor",
         "name": "t_liquid",
         "registryID": 0x61,
         "offset": 6,
@@ -209,6 +228,7 @@ sensor_configuration = [
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
+        "type": "sensor",
         "name": "inlet_water_temp_r4t",
         "registryID": 0x61,
         "offset": 8,
@@ -222,6 +242,7 @@ sensor_configuration = [
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
+        "type": "sensor",
         "name": "dhw_tank_temp_r5t",
         "registryID": 0x61,
         "offset": 10,
@@ -234,6 +255,8 @@ sensor_configuration = [
         "accuracy_decimals": 1,
         "state_class": STATE_CLASS_MEASUREMENT
     }
+
+    # 0x62 Not supported by HPSU Compact 2013 + RRLQ008CAV3
 ]
 
 def validate_setoutdoor_unit(value):
@@ -247,15 +270,25 @@ CONF_OUTDOR_UNIT = "outdoor_unit"
 entity_schemas = {}
 for sensor_conf in sensor_configuration:
     name = sensor_conf.get("name")
-    entity_schemas.update({
-        cv.Optional(name): sensor.sensor_schema(
-            device_class=(sensor_conf.get("device_class") if sensor_conf.get("device_class") != None else sensor._UNDEF),
-            unit_of_measurement=(sensor_conf.get("unit_of_measurement") if sensor_conf.get("unit_of_measurement") != None else sensor._UNDEF),
-            accuracy_decimals=(sensor_conf.get("accuracy_decimals") if sensor_conf.get("accuracy_decimals") != None else sensor._UNDEF),
-            state_class=(sensor_conf.get("state_class") if sensor_conf.get("state_class") != None else sensor._UNDEF),
-            icon=(sensor_conf.get("icon") if sensor_conf.get("icon") != None else sensor._UNDEF)
-        ),
-    })
+
+    match sensor_conf.get("type"):
+        case "sensor":
+            entity_schemas.update({
+                cv.Optional(name): sensor.sensor_schema(
+                    device_class=(sensor_conf.get("device_class") if sensor_conf.get("device_class") != None else sensor._UNDEF),
+                    unit_of_measurement=(sensor_conf.get("unit_of_measurement") if sensor_conf.get("unit_of_measurement") != None else sensor._UNDEF),
+                    accuracy_decimals=(sensor_conf.get("accuracy_decimals") if sensor_conf.get("accuracy_decimals") != None else sensor._UNDEF),
+                    state_class=(sensor_conf.get("state_class") if sensor_conf.get("state_class") != None else sensor._UNDEF),
+                    icon=(sensor_conf.get("icon") if sensor_conf.get("icon") != None else sensor._UNDEF)
+                ),
+            })
+        case "binary_sensor":
+            entity_schemas.update({
+                cv.Optional(name): binary_sensor.binary_sensor_schema(
+                    icon=sensor_conf.get("icon", binary_sensor._UNDEF)
+                )
+            })
+
 
 CONFIG_SCHEMA = cv.Schema(
     {
@@ -287,7 +320,13 @@ async def to_code(config):
     if entities := config.get(CONF_ENTITIES):
         for sens_conf in sensor_configuration:
             if yaml_sensor_conf := entities.get(sens_conf.get("name")):
-                entity = await sensor.new_sensor(yaml_sensor_conf)
+                entity = None
+
+                match sens_conf.get("type"):
+                    case "sensor":
+                        entity = await sensor.new_sensor(yaml_sensor_conf)
+                    case "binary_sensor":
+                        entity = await binary_sensor.new_binary_sensor(yaml_sensor_conf)
 
                 async def handle_lambda():
                     lamb = str(sens_conf.get("handle_lambda")) if "handle_lambda" in sens_conf else "return 0;"

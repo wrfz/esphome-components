@@ -124,3 +124,5 @@ daikin_rotex_uart:
       name: Rücklauftemperatur
     outdoor_air_temp_r1t:
       name: Outdoor Air Temp
+    pressure_equalization:
+      name: Druckausgleich
