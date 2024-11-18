@@ -16,7 +16,7 @@ esp32:
     type: arduino
 
 external_components:
-  - source: github://wrfz/esphome-components@dev
+  - source: github://wrfz/esphome-components
     components: [daikin_rotex_uart]
     refresh: 0s
 
@@ -124,5 +124,11 @@ daikin_rotex_uart:
       name: Rücklauftemperatur
     outdoor_air_temp_r1t:
       name: Outdoor Air Temp
+    buh_step_1:
+      name: Heizstab Stufe 1
+    buh_step_2:
+      name: Heizstab Stufe 2
+    buh_step_bsh:
+      name: Heizstab Speicher
     pressure_equalization:
       name: Druckausgleich

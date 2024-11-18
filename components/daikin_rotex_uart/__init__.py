@@ -159,31 +159,34 @@ sensor_configuration = [
         "icon": "mdi:pipe-valve"
     },
     {
-        "type": "sensor",
+        "type": "binary_sensor",
         "name": "buh_step_1",
         "registryID": 0x60,
         "offset": 12,
         "handle_lambda": """
             return (data[0] & 0x10) > 0;
-        """
+        """,
+        "icon": "mdi:heat-wave"
     },
     {
-        "type": "sensor",
+        "type": "binary_sensor",
         "name": "buh_step_2",
         "registryID": 0x60,
         "offset": 12,
         "handle_lambda": """
             return (data[0] & 0x08) > 0;
-        """
+        """,
+        "icon": "mdi:heat-wave"
     },
     {
-        "type": "sensor",
+        "type": "binary_sensor",
         "name": "buh_step_bsh",
         "registryID": 0x60,
         "offset": 12,
         "handle_lambda": """
             return (data[0] & 0x20) > 0;
-        """
+        """,
+        "icon": "mdi:heat-wave"
     },
     {
         "type": "sensor",
