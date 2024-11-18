@@ -39,8 +39,8 @@ void TMessageManager::handleResponse(uart::UARTDevice& device) {
             return;
         }
 
-        uint8_t registryID = m_buffer[1];
-        uint8_t length = m_buffer[2];
+        const uint8_t registryID = m_buffer[1];
+        const uint8_t length = m_buffer[2];
 
         if (m_buffer.size() >= (2 + length)) {
             const uint8_t header_size = 3;

@@ -164,7 +164,7 @@ sensor_configuration = [
         "registryID": 0x60,
         "offset": 12,
         "handle_lambda": """
-            return (data[0] & 0x08) > 0;
+            return (data[0] & 0x10) > 0;
         """
     },
     {
@@ -173,7 +173,7 @@ sensor_configuration = [
         "registryID": 0x60,
         "offset": 12,
         "handle_lambda": """
-            return (data[0] & 0x10) > 0;
+            return (data[0] & 0x08) > 0;
         """
     },
     {
@@ -329,7 +329,7 @@ async def to_code(config):
                         entity = await binary_sensor.new_binary_sensor(yaml_sensor_conf)
 
                 async def handle_lambda():
-                    lamb = str(sens_conf.get("handle_lambda")) if "handle_lambda" in sens_conf else "return 0;"
+                    lamb = sens_conf.get("handle_lambda", "return 0;")
                     return await cg.process_lambda(
                         Lambda(lamb),
                         [(u8_ptr, "data")],

@@ -43,7 +43,7 @@ void TMessage::convert(uint8_t* data) {
     bool value_valid = false;
     if (m_handle_lambda_set)
     {
-        const uint16_t value = m_handle_lambda(data);
+        value = m_handle_lambda(data);
         value_valid = true;
     }
     else
