@@ -27,12 +27,12 @@ UNIT_PRESSURE_BAR = "bar"
 
 RRLQ008CAV3 = "RRLQ008CAV3"
 RRLQ011CAW1 = "RRLQ011CAW1"
-ERLQ016CW1CA = "ERLQ016CW1-CA"
+ERLQ016CAW1 = "ERLQ016CAW1"
 
 OUTDOOR_UNIT = {
     RRLQ008CAV3: 1,
     RRLQ011CAW1: 2,
-    ERLQ016CW1CA: 3
+    ERLQ016CAW1: 3
 }
 
 current_outdoor_unit = None
@@ -40,7 +40,7 @@ current_outdoor_unit = None
 fan_divider = {
     RRLQ008CAV3: 0.1,
     RRLQ011CAW1: 0.1 * 0.1,
-    ERLQ016CW1CA: 0.1 * 0.1
+    ERLQ016CAW1: 0.1 * 0.1
 }
 
 def get_fan_divider():

@@ -94,7 +94,7 @@ daikin_rotex_uart:
   uart_id: uart_bus
   outdoor_unit: RRLQ008CAV3
   #outdoor_unit: RRLQ011CAW1
-  #outdoor_unit: ERLQ016CW1CA
+  #outdoor_unit: ERLQ016CAW1
   entities:
     t_liq:
       name: Temperatur Flüssigkeitsleitung
