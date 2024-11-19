@@ -49,7 +49,7 @@ def get_fan_divider():
 sensor_configuration = [
     {
         "type": "binary_sensor",
-        "name": "pressure_equalization", # Druckausgleich
+        "name": "press_eq", # Druckausgleich
         "registryID": 0x10,
         "offset": 1,
         "handle_lambda": """
@@ -59,7 +59,7 @@ sensor_configuration = [
     },
     {
         "type": "sensor",
-        "name": "target_liquefaction_pressure",
+        "name": "tgt_liq_press",
         "registryID": 0x10,
         "offset": 6,
         "signed": True,
@@ -73,7 +73,7 @@ sensor_configuration = [
     },
     {
         "type": "sensor",
-        "name": "outdoor_air_temp_r1t",
+        "name": "outdoor_temp",
         "registryID": 0x20,
         "offset": 0,
         "signed": True,
@@ -87,7 +87,7 @@ sensor_configuration = [
     },
     {
         "type": "sensor",
-        "name": "discharge_pipe_temp",
+        "name": "temp_after_compr",
         "registryID": 0x20,
         "offset": 4,
         "signed": True,
@@ -101,7 +101,7 @@ sensor_configuration = [
     },
     {
         "type": "sensor",
-        "name": "heat_exchanger_mid_temp",
+        "name": "exch_temp",
         "registryID": 0x20,
         "offset": 8,
         "signed": True,
@@ -115,18 +115,21 @@ sensor_configuration = [
     },
     {
         "type": "sensor",
-        "name": "inv_primary_current",
+        "name": "inv_prim_current",
         "registryID": 0x21,
         "offset": 0,
         "signed": True,
         "dataSize": 2,
         "endian": Endian.LITTLE,
         "divider": 10,
+        "device_class": DEVICE_CLASS_CURRENT,
+        "unit_of_measurement": UNIT_AMPERE,
+        "accuracy_decimals": 1,
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
         "type": "sensor",
-        "name": "inv_frequency_rps",
+        "name": "inv_freq",
         "registryID": 0x30,
         "offset": 0,
         "signed": False,
@@ -150,7 +153,7 @@ sensor_configuration = [
     },
     {
         "type": "sensor",
-        "name": "expansion_valve",
+        "name": "exv",
         "registryID": 0x30,
         "offset": 3,
         "signed": False,
@@ -163,7 +166,7 @@ sensor_configuration = [
     },
     {
         "type": "binary_sensor",
-        "name": "buh_step_1",
+        "name": "buh1",
         "registryID": 0x60,
         "offset": 12,
         "handle_lambda": """
@@ -173,7 +176,7 @@ sensor_configuration = [
     },
     {
         "type": "binary_sensor",
-        "name": "buh_step_2",
+        "name": "buh2",
         "registryID": 0x60,
         "offset": 12,
         "handle_lambda": """
@@ -183,7 +186,7 @@ sensor_configuration = [
     },
     {
         "type": "binary_sensor",
-        "name": "buh_step_bsh",
+        "name": "buh_bsh",
         "registryID": 0x60,
         "offset": 12,
         "handle_lambda": """
@@ -193,7 +196,7 @@ sensor_configuration = [
     },
     {
         "type": "sensor",
-        "name": "leaving_water_temp_before_buh",
+        "name": "tv",
         "registryID": 0x61,
         "offset": 2,
         "signed": True,
@@ -207,7 +210,7 @@ sensor_configuration = [
     },
     {
         "type": "sensor",
-        "name": "leaving_water_temp_after_buh",
+        "name": "tv_bh",
         "registryID": 0x61,
         "offset": 4,
         "signed": True,
@@ -221,7 +224,7 @@ sensor_configuration = [
     },
     {
         "type": "sensor",
-        "name": "t_liquid",
+        "name": "t_liq",
         "registryID": 0x61,
         "offset": 6,
         "signed": True,
@@ -235,7 +238,7 @@ sensor_configuration = [
     },
     {
         "type": "sensor",
-        "name": "inlet_water_temp_r4t",
+        "name": "tr",
         "registryID": 0x61,
         "offset": 8,
         "signed": True,
@@ -249,7 +252,7 @@ sensor_configuration = [
     },
     {
         "type": "sensor",
-        "name": "dhw_tank_temp_r5t",
+        "name": "dhw_temp",
         "registryID": 0x61,
         "offset": 10,
         "signed": True,
@@ -345,8 +348,9 @@ async def to_code(config):
                 divider = sens_conf.get("divider", 1.0)
                 if callable(divider):
                     divider = divider()
-                cg.add(var.set_entity(sens_conf.get("name"), [
+                cg.add(var.set_entity([
                     entity,
+                    sens_conf.get("name"),
                     sens_conf.get("registryID"),
                     sens_conf.get("offset"),
                     sens_conf.get("signed", True),

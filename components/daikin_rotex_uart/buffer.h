@@ -8,7 +8,7 @@ class TBuffer {
     using BufferType = std::array<uint8_t, 64>;
 public:
     TBuffer();
-    void read(uart::UARTDevice& device);
+    std::string read(uart::UARTDevice& device);
     uint8_t size() const;
     const BufferType& data() const;
     BufferType& data();

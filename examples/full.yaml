@@ -102,35 +102,35 @@ daikin_rotex_uart:
   #outdoor_unit: RRLQ011CAW1
   #outdoor_unit: ERLQ016CW1CA
   entities:
-    t_liquid:
+    t_liq:
       name: Temperatur Flüssigkeitsleitung
-    expansion_valve:
+    exv:
       name: Expansionsventil
-    heat_exchanger_mid_temp:
-      name: Lamellenwärmetauscher Temperatur
+    exch_temp:
+      name: Temperatur Lamellenwärmetauscher
     fan_speed:
       name: Ventilatordrehzahl
-    discharge_pipe_temp:
+    temp_after_compr:
       name: Temperatur nach Kältemittelverdichter
-    inv_frequency_rps:
+    inv_freq:
       name: Kompressor Drehzahl
-    inv_primary_current:
-      name: INV Primary Current (A)
-    dhw_tank_temp_r5t:
+    inv_prim_current:
+      name: INV Primary Current
+    dhw_temp:
       name: DHW tank temp
-    leaving_water_temp_before_buh:
+    tv:
       name: Vorlauftemeratur (TV)
-    leaving_water_temp_after_buh:
+    tv_bh:
       name: Vorlauftemeratur (TVBH)
-    inlet_water_temp_r4t:
+    tr:
       name: Rücklauftemperatur
-    outdoor_air_temp_r1t:
+    outdoor_temp:
       name: Outdoor Air Temp
-    buh_step_1:
+    buh1:
       name: Heizstab Stufe 1
-    buh_step_2:
+    buh2:
       name: Heizstab Stufe 2
-    buh_step_bsh:
+    buh_bsh:
       name: Heizstab Speicher
-    pressure_equalization:
+    press_eq:
       name: Druckausgleich

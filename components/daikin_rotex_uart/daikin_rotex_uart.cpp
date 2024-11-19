@@ -33,6 +33,7 @@ void DaikinRotexUARTComponent::setup() {
         m_message_manager.add({
             pRequest,
             entry.pEntity,
+            entry.name,
             entry.registryID,
             entry.offset,
             entry.isSigned,

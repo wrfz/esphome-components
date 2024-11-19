@@ -20,6 +20,7 @@ class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
 
     struct TEntityArguments {
         EntityBase* pEntity;
+        std::string name;
         uint8_t registryID;
         uint8_t offset;
         bool isSigned;
@@ -39,7 +40,7 @@ class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
     void setup() override;
     void loop() override;
 
-    void set_entity(std::string const& name, TEntityArguments const& arg) { m_entities.push_back(arg); }
+    void set_entity(TEntityArguments const& arg) { m_entities.push_back(arg); }
 
     void call_later(TVoidFunc lambda, uint32_t timeout = 0u) {
         const uint32_t timestamp = millis();

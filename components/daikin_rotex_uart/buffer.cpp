@@ -12,16 +12,13 @@ TBuffer::TBuffer()
 {
 }
 
-void TBuffer::read(uart::UARTDevice& device) {
+std::string TBuffer::read(uart::UARTDevice& device) {
     const auto to_read = std::min(static_cast<uint32_t>(device.available()), m_buffer.size() - m_size);
     uint8_t* data = m_buffer.data() + m_size;
-    bool ok = false;
     if (device.read_array(data, to_read)) {
         m_size += to_read;
-        ok = true;
     }
-    ESP_LOGI(TAG, "RX: %s", Utils::to_hex(data, to_read).c_str());
-    //ESP_LOGI("receive", "buffer: %s", Utils::to_hex(m_buffer.data(), m_size).c_str());
+    return Utils::to_hex(data, to_read);
 }
 
 void TBuffer::shift(uint8_t length) {

@@ -21,6 +21,7 @@ public:
     TMessage(
         std::shared_ptr<TRequest> pRequest,
         EntityBase* pEntity,
+        std::string const& name,
         uint8_t registryID,
         uint8_t offset,
         bool isSigned,
@@ -37,12 +38,13 @@ public:
     uint8_t getDataSize() const { return m_dataSize; }
     EntityBase* getEntity() const { return m_pEntity; }
 
-    void convert(uint8_t* data);
+    std::string convert(uint8_t* data);
     static uint16_t getUnsignedValue(unsigned char *data, int dataSize, Endian endian);
     static short getSignedValue(unsigned char *data, int datasize, Endian endian);
 private:
     std::shared_ptr<TRequest> m_pRequest;
     EntityBase* m_pEntity;
+    std::string m_name;
     int m_registryID;
     int m_offset;
     bool m_signed;

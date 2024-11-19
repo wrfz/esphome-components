@@ -24,7 +24,7 @@ bool TMessageManager::sendNextRequest(uart::UARTDevice& device) {
 }
 
 void TMessageManager::handleResponse(uart::UARTDevice& device) {
-    m_buffer.read(device);
+    std::string log_message = m_buffer.read(device);
 
     if (m_buffer.size() >= 2 && m_buffer[0] == 0x15 && m_buffer[1] == 0xEA) {
         //ESP_LOGI(TAG, "Invalid response: %s", Utils::to_hex(m_buffer.data(), 2).c_str());
@@ -53,7 +53,7 @@ void TMessageManager::handleResponse(uart::UARTDevice& device) {
                         return;
                     }
                     input += message_offset;
-                    message.convert(input);
+                    log_message += "|" + message.convert(input);
                     std::shared_ptr<TRequest> pRequest = message.getRequest();
                     pRequest->setHandled();
                 }
@@ -61,6 +61,8 @@ void TMessageManager::handleResponse(uart::UARTDevice& device) {
             m_buffer.shift(2 + length);
         }
     }
+
+    ESP_LOGI(TAG, "RX: %s", log_message.c_str());
 }
 
 std::shared_ptr<TRequest> TMessageManager::getNextRequestToSend() {

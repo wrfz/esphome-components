@@ -16,6 +16,7 @@ static const char* TAG = "daikin-uart";
 TMessage::TMessage(
     std::shared_ptr<TRequest> pRequest,
     EntityBase* pEntity,
+    std::string const& name,
     uint8_t registryID,
     uint8_t offset,
     bool isSigned,
@@ -27,6 +28,7 @@ TMessage::TMessage(
 )
 : m_pRequest(pRequest)
 , m_pEntity(pEntity)
+, m_name(name)
 , m_registryID(registryID)
 , m_offset(offset)
 , m_signed(isSigned)
@@ -38,7 +40,7 @@ TMessage::TMessage(
 {
 }
 
-void TMessage::convert(uint8_t* data) {
+std::string TMessage::convert(uint8_t* data) {
     double value = 0.0;
     bool value_valid = false;
     if (m_handle_lambda_set)
@@ -62,14 +64,14 @@ void TMessage::convert(uint8_t* data) {
     }
 
     if (value_valid) {
-        std::string str = Utils::format("%d", value);
-        ESP_LOGI(TAG, "%s: %s", m_pEntity->get_name().c_str(), str.c_str());
         if (sensor::Sensor* pSensor = dynamic_cast<sensor::Sensor*>(m_pEntity)) {
             pSensor->publish_state(value);
         } else if (binary_sensor::BinarySensor* pSensor = dynamic_cast<binary_sensor::BinarySensor*>(m_pEntity)) {
             pSensor->publish_state(value);
         }
+        return Utils::format("%s: %f", m_name.c_str(), value);
     }
+    return "INV";
 }
 
 uint16_t TMessage::getUnsignedValue(unsigned char *data, int dataSize, Endian endian) {

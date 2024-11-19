@@ -23,16 +23,12 @@ uint8_t TRequest::getCRC(std::array<uint8_t, 4> const& data, uint32_t len) {
 }
 
 bool TRequest::send(uart::UARTDevice& device) {
-    //std::array<uint8_t, 7> registries {0x00, 0x10, 0x20, 0x30, 0x60, 0x61, 0x62};
-    //for (auto registriy : registries) {
-        std::array<uint8_t, 4> buffer {0x03, 0x40, m_registryID, 0x00};
-        buffer[3] = getCRC(buffer, 3);
+    std::array<uint8_t, 4> buffer {0x03, 0x40, m_registryID, 0x00};
+    buffer[3] = getCRC(buffer, 3);
 
-        ESP_LOGI(TAG, "TX: %s", Utils::to_hex(buffer).c_str());
+    ESP_LOGI(TAG, "TX: %s", Utils::to_hex(buffer).c_str());
 
-        device.write_array(buffer.data(), sizeof(buffer));
-    //}
-
+    device.write_array(buffer.data(), sizeof(buffer));
     device.flush();
 
     m_last_request_timestamp = millis();
