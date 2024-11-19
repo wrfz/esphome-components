@@ -98,7 +98,9 @@ uart:
 daikin_rotex_uart:
   id: rotext_hpsu_uart
   uart_id: uart_bus
-  outdoor_unit: RRLQ008CAV3 # also supported: RRLQ011CAW1
+  outdoor_unit: RRLQ008CAV3
+  #outdoor_unit: RRLQ011CAW1
+  #outdoor_unit: ERLQ016CW1CA
   entities:
     t_liquid:
       name: Temperatur Flüssigkeitsleitung
