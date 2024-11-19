@@ -1,21 +1,39 @@
-name: Test Daikin Rotex UART Component
+name: Wokwi UART Test
 
 on:
   push:
     branches:
-      - wokwi
+      - main
   pull_request:
 
 jobs:
-  build:
+  test-esp:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Check out repository
       uses: actions/checkout@v3
 
-    - name: Set up PlatformIO
-      uses: platformio/action-core@v2
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
 
-    - name: Run tests
-      run: platformio test
+    - name: Install Node.js and Wokwi CLI
+      run: |
+        sudo apt update
+        sudo apt install -y git npm
+        git clone https://github.com/wokwi/wokwi-cli
+        cd wokwi-cli
+        npm install
+        sudo npm link
+
+    - name: Install dependencies
+      run: |
+        pip install esphome pytest pyserial
+
+    - name: Run Wokwi simulation
+      run: |
+        wokwi-cli exec \
+          --project=./wokwi-project \
+          --command="pytest tests/test_uart.cpp --disable-warnings"
