@@ -7,8 +7,6 @@ esphome:
             - "-fno-rtti"
         build_flags:
             - "-std=gnu++17"
-    includes:
-      - "components/daikin_rotex_uart/partitions_dumper.h"
 
 esp32:
   board: esp32-s3-devkitc-1
@@ -81,10 +79,6 @@ text_sensor:
 button:
   - platform: restart
     name: "Rotex ESP Restart"
-  - platform: template
-    name: Dump Partitions
-    on_press:
-      - lambda: esphome::daikin_rotex_uart::PartitionsDumper::dump();
 
 uart:
   id: uart_bus
