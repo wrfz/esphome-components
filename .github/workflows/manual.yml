@@ -1,0 +1,36 @@
+name: ESPHome UART Test
+
+on:
+  push:
+    branches:
+      - wokwi
+  pull_request:
+
+jobs:
+  test-esp:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install Wokwi CLI
+      run: |
+        sudo apt update
+        sudo apt install -y npm
+        sudo npm install -g @wokwi/cli
+
+    - name: Install dependencies
+      run: |
+        pip install esphome pytest pyserial
+
+    - name: Run Wokwi simulation with UART tests
+      run: |
+        wokwi-cli exec \
+          --project=./wokwi-project \
+          --command="pytest tests/test_uart.py --disable-warnings"
