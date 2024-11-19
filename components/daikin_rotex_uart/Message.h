@@ -28,6 +28,7 @@ public:
         uint8_t dataSize,
         Endian endian,
         double divider,
+        uint8_t accuracy_decimals,
         THandleFunc handle_lambda,
         bool handle_lambda_set
     );
@@ -51,6 +52,7 @@ private:
     int m_dataSize;
     Endian m_endian;
     double m_divider;
+    uint8_t m_accuracy_decimals;
     THandleFunc m_handle_lambda;
     bool m_handle_lambda_set;
 };

@@ -23,6 +23,7 @@ TMessage::TMessage(
     uint8_t dataSize,
     Endian endian,
     double divider,
+    uint8_t accuracy_decimals,
     THandleFunc handle_lambda,
     bool handle_lambda_set
 )
@@ -35,6 +36,7 @@ TMessage::TMessage(
 , m_dataSize(dataSize)
 , m_endian(endian)
 , m_divider(divider)
+, m_accuracy_decimals(accuracy_decimals)
 , m_handle_lambda(handle_lambda)
 , m_handle_lambda_set(handle_lambda_set)
 {
@@ -69,7 +71,7 @@ std::string TMessage::convert(uint8_t* data) {
         } else if (binary_sensor::BinarySensor* pSensor = dynamic_cast<binary_sensor::BinarySensor*>(m_pEntity)) {
             pSensor->publish_state(value);
         }
-        return Utils::format("%s: %f", m_name.c_str(), value);
+        return Utils::format("%s: %.*f", m_name.c_str(), m_accuracy_decimals, value);
     }
     return "INV";
 }

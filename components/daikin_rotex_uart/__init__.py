@@ -284,11 +284,11 @@ for sensor_conf in sensor_configuration:
         case "sensor":
             entity_schemas.update({
                 cv.Optional(name): sensor.sensor_schema(
-                    device_class=(sensor_conf.get("device_class") if sensor_conf.get("device_class") != None else sensor._UNDEF),
-                    unit_of_measurement=(sensor_conf.get("unit_of_measurement") if sensor_conf.get("unit_of_measurement") != None else sensor._UNDEF),
-                    accuracy_decimals=(sensor_conf.get("accuracy_decimals") if sensor_conf.get("accuracy_decimals") != None else sensor._UNDEF),
-                    state_class=(sensor_conf.get("state_class") if sensor_conf.get("state_class") != None else sensor._UNDEF),
-                    icon=(sensor_conf.get("icon") if sensor_conf.get("icon") != None else sensor._UNDEF)
+                    device_class=(sensor_conf.get("device_class", sensor._UNDEF)),
+                    unit_of_measurement=(sensor_conf.get("unit_of_measurement", sensor._UNDEF)),
+                    accuracy_decimals=(sensor_conf.get("accuracy_decimals", sensor._UNDEF)),
+                    state_class=(sensor_conf.get("state_class", sensor._UNDEF)),
+                    icon=(sensor_conf.get("icon", sensor._UNDEF))
                 ),
             })
         case "binary_sensor":
@@ -297,7 +297,6 @@ for sensor_conf in sensor_configuration:
                     icon=sensor_conf.get("icon", binary_sensor._UNDEF)
                 )
             })
-
 
 CONFIG_SCHEMA = cv.Schema(
     {
@@ -357,6 +356,7 @@ async def to_code(config):
                     sens_conf.get("dataSize", 0),
                     EndianLittle if sens_conf.get("endian") == Endian.LITTLE else EndianBig,
                     divider,
+                    sens_conf.get("accuracy_decimals", 0),
                     await handle_lambda(),
                     "handle_lambda" in sens_conf
                 ]))

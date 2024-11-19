@@ -20,10 +20,24 @@ public:
 
     template<typename... Args>
     static std::string format(const std::string& format, Args... args) {
-        const auto size = std::snprintf(nullptr, 0, format.c_str(), args...) + 1;
+        int precision = 2;
+        bool has_precision = false;
+
+        (void)std::initializer_list<int>{(
+            (std::is_floating_point_v<Args> && !has_precision) ?
+            (precision = 2, has_precision = true) : 0)...
+        };
+
+        std::string format_with_precision = format;
+        size_t pos = format_with_precision.find("%.*f");
+        if (pos != std::string::npos) {
+            format_with_precision.replace(pos, 4, "%.*f");
+        }
+
+        const auto size = std::snprintf(nullptr, 0, format_with_precision.c_str(), args...) + 1;
         const auto buffer = std::make_unique<char[]>(size);
 
-        std::snprintf(buffer.get(), size, format.c_str(), args...);
+        std::snprintf(buffer.get(), size, format_with_precision.c_str(), args...);
 
         return std::string(buffer.get(), buffer.get() + size - 1);
     }
