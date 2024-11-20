@@ -110,6 +110,8 @@ daikin_rotex_uart:
       name: Kompressor Drehzahl
     inv_prim_current:
       name: INV Primary Current
+    inv_sec_current:
+      name: INV Secondary Current
     dhw_temp:
       name: DHW tank temp
     tv:

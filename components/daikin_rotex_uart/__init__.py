@@ -129,6 +129,20 @@ sensor_configuration = [
     },
     {
         "type": "sensor",
+        "name": "inv_sec_current",
+        "registryID": 0x21,
+        "offset": 2,
+        "signed": True,
+        "dataSize": 2,
+        "endian": Endian.LITTLE,
+        "divider": 10,
+        "device_class": DEVICE_CLASS_CURRENT,
+        "unit_of_measurement": UNIT_AMPERE,
+        "accuracy_decimals": 1,
+        "state_class": STATE_CLASS_MEASUREMENT
+    },
+    {
+        "type": "sensor",
         "name": "inv_freq",
         "registryID": 0x30,
         "offset": 0,
