@@ -27,7 +27,7 @@ void TMessageManager::handleResponse(uart::UARTDevice& device) {
     std::string log_message = m_buffer.read(device);
 
     if (m_buffer.size() >= 2 && m_buffer[0] == 0x15 && m_buffer[1] == 0xEA) {
-        //ESP_LOGI(TAG, "Invalid response: %s", Utils::to_hex(m_buffer.data(), 2).c_str());
+        //ESP_LOGI(TAG, "RX: Invalid request => data: %s", Utils::to_hex(m_buffer.data(), 2).c_str());
         m_buffer.shift(2);
         return;
     }
@@ -49,7 +49,7 @@ void TMessageManager::handleResponse(uart::UARTDevice& device) {
                     uint8_t* input = m_buffer.data().data();
                     const uint8_t message_offset = header_size + message.getOffset();
                     if (message_offset < 3 || (message_offset + message.getDataSize()) > m_buffer.size()) {
-                        ESP_LOGE(TAG, "Invalid offset! message_offset: %d, message.data_size: %d, buffer.size: %d", message_offset, message.getDataSize(), m_buffer.size());
+                        ESP_LOGE(TAG, "RX: Invalid offset! message_offset: %d, message.data_size: %d, buffer.size: %d", message_offset, message.getDataSize(), m_buffer.size());
                         return;
                     }
                     input += message_offset;
@@ -59,10 +59,13 @@ void TMessageManager::handleResponse(uart::UARTDevice& device) {
                 }
             }
             m_buffer.shift(2 + length);
+            ESP_LOGI(TAG, "RX: %s", log_message.c_str());
+            return;
         }
+        ESP_LOGE(TAG, "RX: incomplete buffer: %s", log_message.c_str());
+        return;
     }
-
-    ESP_LOGI(TAG, "RX: %s", log_message.c_str());
+    ESP_LOGE(TAG, "RX: incomplete header: %s", log_message.c_str());
 }
 
 std::shared_ptr<TRequest> TMessageManager::getNextRequestToSend() {
@@ -94,6 +97,7 @@ std::shared_ptr<TRequest> TMessageManager::getNextRequestToSend() {
 void TMessageManager::dumpRequests() {
     std::string dump;
     std::list<uint8_t> used;
+    bool first = true;
     for (auto& message : m_messages) {
         std::shared_ptr<TRequest> pRequest = message.getRequest();
 
@@ -103,7 +107,13 @@ void TMessageManager::dumpRequests() {
             if (!dump.empty()) {
                 dump += "|";
             }
-            dump += Utils::format("%s:%d:%d", Utils::to_hex(pRequest->getRegistryId()).c_str(), pRequest->isInProgress(), pRequest->isRequestRequired());
+            const char state = pRequest->isInProgress() ? 'P' : (pRequest->isRequestRequired() ? 'R' : '-');
+            if (!first) {
+                dump += " ";
+            }
+            dump += Utils::format("%s:%c|%d|%d", Utils::to_hex(pRequest->getRegistryId()).c_str(), state,
+                pRequest->getLastRequestTimestamp(), pRequest->getLastResponeTimestamp());
+            first = false;
         }
     }
     ESP_LOGI(TAG, "%s", dump.c_str());
