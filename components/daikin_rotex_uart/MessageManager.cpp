@@ -95,7 +95,7 @@ std::shared_ptr<TRequest> TMessageManager::getNextRequestToSend() {
 }
 
 void TMessageManager::dumpRequests() {
-    std::string dump;
+    std::string dump = Utils::format("%d", millis());
     std::list<uint8_t> used;
     bool first = true;
     for (auto& message : m_messages) {
@@ -104,14 +104,8 @@ void TMessageManager::dumpRequests() {
         const bool contains = (std::find(used.begin(), used.end(), pRequest->getRegistryId()) != used.end());
         if (!contains) {
             used.push_back(pRequest->getRegistryId());
-            if (!dump.empty()) {
-                dump += "|";
-            }
             const char state = pRequest->isInProgress() ? 'P' : (pRequest->isRequestRequired() ? 'R' : '-');
-            if (!first) {
-                dump += " ";
-            }
-            dump += Utils::format("%s:%c|%d|%d", Utils::to_hex(pRequest->getRegistryId()).c_str(), state,
+            dump += Utils::format("| %s:%c|%d|%d", Utils::to_hex(pRequest->getRegistryId()).c_str(), state,
                 pRequest->getLastRequestTimestamp(), pRequest->getLastResponeTimestamp());
             first = false;
         }
