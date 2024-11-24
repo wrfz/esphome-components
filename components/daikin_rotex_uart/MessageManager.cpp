@@ -84,14 +84,19 @@ std::shared_ptr<TRequest> TMessageManager::getNextRequestToSend() {
         }
     }
 
+    std::shared_ptr<TRequest> pOldestRequest = nullptr;
     for (auto& message : m_messages) {
         std::shared_ptr<TRequest> pRequest = message.getRequest();
         if (pRequest->isRequestRequired()) {
-            dumpRequests();
-            return pRequest;
+            if (pOldestRequest == nullptr || pRequest->getLastRequestTimestamp() < pOldestRequest->getLastRequestTimestamp()) {
+                pOldestRequest = pRequest;
+            }
         }
     }
-    return std::shared_ptr<TRequest>();
+    if (pOldestRequest != nullptr) {
+        dumpRequests();
+    }
+    return pOldestRequest;
 }
 
 void TMessageManager::dumpRequests() {
