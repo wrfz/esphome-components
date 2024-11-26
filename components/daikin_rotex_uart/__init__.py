@@ -25,19 +25,22 @@ class Endian(Enum):
 UNIT_REVOLUTIONS_PER_SECOND = "rps"
 UNIT_PRESSURE_BAR = "bar"
 
+RRLQ006CAV3 = "RRLQ006CAV3"
 RRLQ008CAV3 = "RRLQ008CAV3"
 RRLQ011CAW1 = "RRLQ011CAW1"
 ERLQ016CAW1 = "ERLQ016CAW1"
 
 OUTDOOR_UNIT = {
-    RRLQ008CAV3: 1,
-    RRLQ011CAW1: 2,
-    ERLQ016CAW1: 3
+    RRLQ006CAV3: 1,
+    RRLQ008CAV3: 2,
+    RRLQ011CAW1: 3,
+    ERLQ016CAW1: 4
 }
 
 current_outdoor_unit = None
 
 fan_divider = {
+    RRLQ006CAV3: 0.1,
     RRLQ008CAV3: 0.1,
     RRLQ011CAW1: 0.1 * 0.1,
     ERLQ016CAW1: 0.1 * 0.1
@@ -279,7 +282,7 @@ sensor_configuration = [
         "state_class": STATE_CLASS_MEASUREMENT
     }
 
-    # 0x62 Not supported by HPSU Compact 2013 + RRLQ008CAV3
+    # 0x62 Not supported by HPSU Compact 2013 + RRLQ006CAV3
 ]
 
 def validate_setoutdoor_unit(value):
