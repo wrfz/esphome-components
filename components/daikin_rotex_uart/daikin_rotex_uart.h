@@ -30,6 +30,7 @@ class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
         uint8_t accuracy_decimals;
         TMessage::THandleFunc handle_lambda;
         bool handle_lambda_set;
+        bool forward_to_can;
     };
 
     using TEntityArgumentsList = std::list<TEntityArguments>;
@@ -41,6 +42,7 @@ class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
     void setup() override;
     void loop() override;
 
+    void set_can_id(std::string const& can_id) { m_can_id = can_id; }
     void set_entity(TEntityArguments const& arg) { m_entities.push_back(arg); }
 
     void call_later(TVoidFunc lambda, uint32_t timeout = 0u) {
@@ -49,6 +51,7 @@ class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
     }
 
 private:
+    std::string m_can_id;
     TEntityArgumentsList m_entities;
     TMessageManager m_message_manager;
     std::list<std::pair<TVoidFunc, uint32_t>> m_later_calls;

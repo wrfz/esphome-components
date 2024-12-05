@@ -5,6 +5,7 @@ from esphome.core import Lambda
 from esphome.cpp_types import std_ns
 from esphome.components import sensor, binary_sensor, uart
 from esphome.components.uart import UARTComponent
+from esphome.components.canbus import CanbusComponent
 from enum import Enum
 
 CODEOWNERS = ["@wrfz"]
@@ -17,6 +18,8 @@ DaikinRotexUARTComponent = daikin_rotex_uart_ns.class_(
 )
 EndianLittle = daikin_rotex_uart_ns.enum('TMessage::Endian::Little')
 EndianBig = daikin_rotex_uart_ns.enum('TMessage::Endian::Big')
+
+CONF_CAN_ID = "can_id"
 
 class Endian(Enum):
     LITTLE = 1
@@ -292,6 +295,7 @@ def validate_setoutdoor_unit(value):
 
 CONF_ENTITIES = "entities"
 CONF_OUTDOR_UNIT = "outdoor_unit"
+FORWARD_TO_CAN = "forward_to_can"
 
 entity_schemas = {}
 for sensor_conf in sensor_configuration:
@@ -300,25 +304,29 @@ for sensor_conf in sensor_configuration:
     match sensor_conf.get("type"):
         case "sensor":
             entity_schemas.update({
-                cv.Optional(name): sensor.sensor_schema(
+                cv.Required(name): sensor.sensor_schema(
                     device_class=(sensor_conf.get("device_class", sensor._UNDEF)),
                     unit_of_measurement=(sensor_conf.get("unit_of_measurement", sensor._UNDEF)),
                     accuracy_decimals=(sensor_conf.get("accuracy_decimals", sensor._UNDEF)),
                     state_class=(sensor_conf.get("state_class", sensor._UNDEF)),
                     icon=(sensor_conf.get("icon", sensor._UNDEF))
-                ),
+                ).extend(
+                    {
+                        cv.Optional(FORWARD_TO_CAN, default=False): cv.boolean
+                    }
+                )
             })
         case "binary_sensor":
             entity_schemas.update({
-                cv.Optional(name): binary_sensor.binary_sensor_schema(
+                cv.Required(name): binary_sensor.binary_sensor_schema(
                     icon=sensor_conf.get("icon", binary_sensor._UNDEF)
                 )
             })
-
 CONFIG_SCHEMA = cv.Schema(
     {
         cv.GenerateID(): cv.declare_id(DaikinRotexUARTComponent),
         cv.Required(CONF_UART_ID): cv.use_id(UARTComponent),
+        cv.Required(CONF_CAN_ID): cv.string,
         cv.Required(CONF_OUTDOR_UNIT): cv.ensure_list(cv.enum(OUTDOOR_UNIT), validate_setoutdoor_unit),
         cv.Required(CONF_ENTITIES): cv.Schema(
             entity_schemas
@@ -342,9 +350,13 @@ async def to_code(config):
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
 
+    if can_id := config.get(CONF_CAN_ID):
+        cg.add(var.set_can_id(can_id))
+
     if entities := config.get(CONF_ENTITIES):
         for sens_conf in sensor_configuration:
             if yaml_sensor_conf := entities.get(sens_conf.get("name")):
+
                 entity = None
 
                 match sens_conf.get("type"):
@@ -375,5 +387,6 @@ async def to_code(config):
                     divider,
                     sens_conf.get("accuracy_decimals", 0),
                     await handle_lambda(),
-                    "handle_lambda" in sens_conf
+                    "handle_lambda" in sens_conf,
+                    yaml_sensor_conf.get(FORWARD_TO_CAN, False)
                 ]))

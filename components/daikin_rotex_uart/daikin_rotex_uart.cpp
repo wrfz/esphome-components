@@ -42,7 +42,8 @@ void DaikinRotexUARTComponent::setup() {
             entry.divider,
             entry.accuracy_decimals,
             entry.handle_lambda,
-            entry.handle_lambda_set
+            entry.handle_lambda_set,
+            entry.forward_to_can
         });
     }
 }

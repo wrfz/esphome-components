@@ -1,6 +1,7 @@
 #include "esphome/components/daikin_rotex_uart/Message.h"
 #include "esphome/components/daikin_rotex_uart/utils.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
+#include "esphome/components/api/api_server.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/core/log.h"
 
@@ -25,7 +26,8 @@ TMessage::TMessage(
     double divider,
     uint8_t accuracy_decimals,
     THandleFunc handle_lambda,
-    bool handle_lambda_set
+    bool handle_lambda_set,
+    bool forward_to_can
 )
 : m_pRequest(pRequest)
 , m_pEntity(pEntity)
@@ -39,6 +41,7 @@ TMessage::TMessage(
 , m_accuracy_decimals(accuracy_decimals)
 , m_handle_lambda(handle_lambda)
 , m_handle_lambda_set(handle_lambda_set)
+, m_forward_to_can(forward_to_can)
 {
 }
 
@@ -70,6 +73,22 @@ std::string TMessage::convert(uint8_t* data) {
             pSensor->publish_state(value);
         } else if (binary_sensor::BinarySensor* pSensor = dynamic_cast<binary_sensor::BinarySensor*>(m_pEntity)) {
             pSensor->publish_state(value);
+        }
+        if (m_forward_to_can) {
+            auto* api_connection = esphome::api::global_api_server->get_connection();
+
+            if (api_connection != nullptr) {
+                api_connection->send_number_state("sensor_id", value);
+                ESP_LOGD("CustomAPI", "Sent sensor value: %.2f", value);
+            } else {
+                ESP_LOGE("CustomAPI", "API Connection is null");
+            }
+
+            App.get_api_server().send_number(
+                "rotext_hpsu",
+                "tr",
+                value
+            );
         }
         return Utils::format("%s: %.*f", m_name.c_str(), m_accuracy_decimals, value);
     }

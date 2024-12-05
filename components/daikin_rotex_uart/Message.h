@@ -30,7 +30,8 @@ public:
         double divider,
         uint8_t accuracy_decimals,
         THandleFunc handle_lambda,
-        bool handle_lambda_set
+        bool handle_lambda_set,
+        bool forward_to_can
     );
 
     std::shared_ptr<TRequest> getRequest() { return m_pRequest; }
@@ -55,6 +56,7 @@ private:
     uint8_t m_accuracy_decimals;
     THandleFunc m_handle_lambda;
     bool m_handle_lambda_set;
+    bool m_forward_to_can;
 };
 
 } // namespace daikin_rotex_uart
