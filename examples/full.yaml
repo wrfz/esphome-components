@@ -133,3 +133,5 @@ daikin_rotex_uart:
       name: Heizstab Speicher
     press_eq:
       name: Druckausgleich
+    4_way_valve:
+      name: 4-Wege-Ventil

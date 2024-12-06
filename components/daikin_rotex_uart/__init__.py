@@ -183,6 +183,16 @@ sensor_configuration = [
     },
     {
         "type": "binary_sensor",
+        "name": "4_way_valve",
+        "registryID": 0x30,
+        "offset": 11,
+        "handle_lambda": """
+            return (data[0] & 0x80) > 0;
+        """,
+        "icon": "mdi:numeric-4-circle-outline"
+    },
+    {
+        "type": "binary_sensor",
         "name": "buh1",
         "registryID": 0x60,
         "offset": 12,
