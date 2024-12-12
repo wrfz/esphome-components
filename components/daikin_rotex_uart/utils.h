@@ -17,6 +17,7 @@ public:
     static std::string to_hex(std::array<uint8_t, Size> const& data, std::size_t maxlen = Size);
     static std::string to_hex(uint8_t const* data, std::size_t maxlen);
     static std::string to_hex(uint32_t value);
+    static std::map<uint16_t, std::string> str_to_map(const std::string& input);
 
     template<typename... Args>
     static std::string format(const std::string& format, Args... args) {

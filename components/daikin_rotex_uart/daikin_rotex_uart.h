@@ -1,6 +1,7 @@
 #pragma once
 
 #include "esphome/components/daikin_rotex_uart/MessageManager.h"
+#include "esphome/components/daikin_rotex_uart/entity.h"
 #include "esphome/components/uart/uart.h"
 #include "esphome/core/component.h"
 #include <list>
@@ -16,24 +17,6 @@ namespace uart {
 namespace daikin_rotex_uart {
 
 class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
-    using Endian = TMessage::Endian;
-
-    struct TEntityArguments {
-        EntityBase* pEntity;
-        std::string name;
-        uint8_t registryID;
-        uint8_t offset;
-        bool isSigned;
-        uint8_t dataSize;
-        Endian endian;
-        double divider;
-        uint8_t accuracy_decimals;
-        TMessage::THandleFunc handle_lambda;
-        bool handle_lambda_set;
-    };
-
-    using TEntityArgumentsList = std::list<TEntityArguments>;
-
  public:
     using TVoidFunc = std::function<void()>;
 
@@ -41,7 +24,7 @@ class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
     void setup() override;
     void loop() override;
 
-    void set_entity(TEntityArguments const& arg) { m_entities.push_back(arg); }
+    void add_entity(EntityBase* pEntityBase);
 
     void call_later(TVoidFunc lambda, uint32_t timeout = 0u) {
         const uint32_t timestamp = millis();
@@ -49,7 +32,6 @@ class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
     }
 
 private:
-    TEntityArgumentsList m_entities;
     TMessageManager m_message_manager;
     std::list<std::pair<TVoidFunc, uint32_t>> m_later_calls;
 };

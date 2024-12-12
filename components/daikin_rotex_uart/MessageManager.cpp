@@ -1,4 +1,5 @@
 #include "esphome/components/daikin_rotex_uart/MessageManager.h"
+#include "esphome/components/daikin_rotex_uart/request.h"
 #include "esphome/components/daikin_rotex_uart/utils.h"
 #include "esphome/components/uart/uart.h"
 #include "esphome/core/hal.h"
@@ -11,8 +12,22 @@ namespace daikin_rotex_uart {
 
 static const char* TAG = "daikin-uart";
 
-void TMessageManager::add(TMessage const& message) {
-    m_messages.push_back(message);
+void TMessageManager::add(TEntity* pEntity) {
+    std::shared_ptr<TRequest> pRequest;
+
+    bool found = false;
+    for (TEntity* pE : m_messages) {
+        if (pE->getRegistryID() == pEntity->getRegistryID()) {
+            pEntity->setRequest(pE->getRequest());
+            found = true;
+            break;
+        }
+    }
+    if (!found) {
+        pEntity->setRequest(std::make_shared<TRequest>(pEntity->getRegistryID()));
+    }
+
+    m_messages.push_back(pEntity);
 }
 
 bool TMessageManager::sendNextRequest(uart::UARTDevice& device) {
@@ -44,17 +59,17 @@ void TMessageManager::handleResponse(uart::UARTDevice& device) {
 
         if (m_buffer.size() >= (2 + length)) {
             const uint8_t header_size = 3;
-            for (auto& message : m_messages) {
-                if (registryID == message.getRegistryID()) {
+            for (auto& pEntity : m_messages) {
+                if (registryID == pEntity->getRegistryID()) {
                     uint8_t* input = m_buffer.data().data();
-                    const uint8_t message_offset = header_size + message.getOffset();
-                    if (message_offset < 3 || (message_offset + message.getDataSize()) > m_buffer.size()) {
-                        ESP_LOGE(TAG, "RX: Invalid offset! message_offset: %d, message.data_size: %d, buffer.size: %d", message_offset, message.getDataSize(), m_buffer.size());
+                    const uint8_t message_offset = header_size + pEntity->getOffset();
+                    if (message_offset < 3 || (message_offset + pEntity->getDataSize()) > m_buffer.size()) {
+                        ESP_LOGE(TAG, "RX: Invalid offset! message_offset: %d, message.data_size: %d, buffer.size: %d", message_offset, pEntity->getDataSize(), m_buffer.size());
                         return;
                     }
                     input += message_offset;
-                    log_message += "|" + message.convert(input);
-                    std::shared_ptr<TRequest> pRequest = message.getRequest();
+                    log_message += "|" + pEntity->convert(input);
+                    std::shared_ptr<TRequest> pRequest = pEntity->getRequest();
                     pRequest->setHandled();
                 }
             }
@@ -78,7 +93,7 @@ std::shared_ptr<TRequest> TMessageManager::getNextRequestToSend() {
     }
 
     for (auto& message : m_messages) {
-        std::shared_ptr<TRequest> pRequest = message.getRequest();
+        std::shared_ptr<TRequest> pRequest = message->getRequest();
         if (pRequest->isInProgress()) {
             return std::shared_ptr<TRequest>();
         }
@@ -86,7 +101,7 @@ std::shared_ptr<TRequest> TMessageManager::getNextRequestToSend() {
 
     std::shared_ptr<TRequest> pOldestRequest = nullptr;
     for (auto& message : m_messages) {
-        std::shared_ptr<TRequest> pRequest = message.getRequest();
+        std::shared_ptr<TRequest> pRequest = message->getRequest();
         if (pRequest->isRequestRequired()) {
             if (pOldestRequest == nullptr || pRequest->getLastRequestTimestamp() < pOldestRequest->getLastRequestTimestamp()) {
                 pOldestRequest = pRequest;
@@ -104,7 +119,7 @@ void TMessageManager::dumpRequests() {
     std::list<uint8_t> used;
     bool first = true;
     for (auto& message : m_messages) {
-        std::shared_ptr<TRequest> pRequest = message.getRequest();
+        std::shared_ptr<TRequest> pRequest = message->getRequest();
 
         const bool contains = (std::find(used.begin(), used.end(), pRequest->getRegistryId()) != used.end());
         if (!contains) {

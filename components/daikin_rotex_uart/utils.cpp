@@ -41,6 +41,26 @@ std::string Utils::to_hex(uint32_t value) {
     return std::string(hex_string);
 }
 
+std::map<uint16_t, std::string> Utils::str_to_map(const std::string& input) {
+    std::map<uint16_t, std::string> result;
+    std::stringstream ss(input);
+    std::string pair;
+
+    while (std::getline(ss, pair, '|')) {
+        size_t pos = pair.find(':');
+        if (pos != std::string::npos) {
+            std::string keyStr = pair.substr(0, pos);
+            std::string value = pair.substr(pos + 1);
+
+            uint16_t key = static_cast<uint16_t>(std::strtoul(keyStr.c_str(), nullptr, 16));
+
+            result[key] = value;
+        }
+    }
+
+    return result;
+}
+
 template std::string Utils::to_hex<64u>(std::array<uint8_t, 64u> const&, std::size_t);
 template std::string Utils::to_hex<4u>(std::array<unsigned char, 4u> const&, std::size_t);
 

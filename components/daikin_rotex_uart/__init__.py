@@ -3,20 +3,25 @@ import esphome.config_validation as cv
 from esphome.const import *
 from esphome.core import Lambda
 from esphome.cpp_types import std_ns
-from esphome.components import sensor, binary_sensor, uart
+from esphome.components import sensor, binary_sensor, text_sensor, uart
 from esphome.components.uart import UARTComponent
 from enum import Enum
 
 CODEOWNERS = ["@wrfz"]
-AUTO_LOAD = ["binary_sensor", "sensor"]
+AUTO_LOAD = ["binary_sensor", "sensor", "text_sensor"]
 DEPENDENCIES = ["uart"]
 
 daikin_rotex_uart_ns = cg.esphome_ns.namespace("daikin_rotex_uart")
 DaikinRotexUARTComponent = daikin_rotex_uart_ns.class_(
     "DaikinRotexUARTComponent", cg.Component, uart.UARTDevice
 )
-EndianLittle = daikin_rotex_uart_ns.enum('TMessage::Endian::Little')
-EndianBig = daikin_rotex_uart_ns.enum('TMessage::Endian::Big')
+
+UartSensor = daikin_rotex_uart_ns.class_("UartSensor", sensor.Sensor)
+UartTextSensor = daikin_rotex_uart_ns.class_("UartTextSensor", text_sensor.TextSensor)
+UartBinarySensor = daikin_rotex_uart_ns.class_("UartBinarySensor", binary_sensor.BinarySensor)
+
+EndianLittle = daikin_rotex_uart_ns.enum('TEntity::Endian::Little')
+EndianBig = daikin_rotex_uart_ns.enum('TEntity::Endian::Big')
 
 class Endian(Enum):
     LITTLE = 1
@@ -59,6 +64,16 @@ sensor_configuration = [
             return (data[0] & 0x04) > 0;
         """,
         "icon": "mdi:car-brake-low-pressure"
+    },
+    {
+        "type": "binary_sensor",
+        "name": "defrost_operation", # Abtauvorgang
+        "registryID": 0x10,
+        "offset": 1,
+        "handle_lambda": """
+            return (data[0] & 0x10) > 0;
+        """,
+        "icon": "mdi:sun-snowflake-variant"
     },
     {
         "type": "sensor",
@@ -192,6 +207,27 @@ sensor_configuration = [
         "icon": "mdi:numeric-4-circle-outline"
     },
     {
+        "type": "text_sensor",
+        "name": "mode_of_operating", # Betriebsart
+        "registryID": 0x60,
+        "offset": 2,
+        "signed": False,
+        "dataSize": 1,
+        "icon": "mdi:sun-snowflake-variant",
+        "map": {
+            0x00: "Standby",
+            0x01: "Heizen",
+            0x02: "Kühlen",
+            0x03: "???",
+            0x04: "Warmwasserbereitung",
+            0x05: "Heizen + Warmwasser",
+            0x06: "Kühlen + Warmwasser"
+        },
+        "handle_lambda": """
+            return data[0] >> 4;
+        """
+    },
+    {
         "type": "binary_sensor",
         "name": "buh1",
         "registryID": 0x60,
@@ -311,6 +347,7 @@ for sensor_conf in sensor_configuration:
         case "sensor":
             entity_schemas.update({
                 cv.Optional(name): sensor.sensor_schema(
+                    UartSensor,
                     device_class=(sensor_conf.get("device_class", sensor._UNDEF)),
                     unit_of_measurement=(sensor_conf.get("unit_of_measurement", sensor._UNDEF)),
                     accuracy_decimals=(sensor_conf.get("accuracy_decimals", sensor._UNDEF)),
@@ -321,7 +358,15 @@ for sensor_conf in sensor_configuration:
         case "binary_sensor":
             entity_schemas.update({
                 cv.Optional(name): binary_sensor.binary_sensor_schema(
+                    UartBinarySensor,
                     icon=sensor_conf.get("icon", binary_sensor._UNDEF)
+                )
+            })
+        case "text_sensor":
+            entity_schemas.update({
+                cv.Optional(name): text_sensor.text_sensor_schema(
+                    UartTextSensor,
+                    icon=sensor_conf.get("icon", text_sensor._UNDEF)
                 )
             })
 
@@ -357,11 +402,18 @@ async def to_code(config):
             if yaml_sensor_conf := entities.get(sens_conf.get("name")):
                 entity = None
 
+                divider = sens_conf.get("divider", 1.0)
+                mapping = sens_conf.get("map", {})
+                str_map = "|".join([f"0x{int(key * divider) & 0xFFFF :02X}:{value}" for key, value in mapping.items()])
+
                 match sens_conf.get("type"):
                     case "sensor":
                         entity = await sensor.new_sensor(yaml_sensor_conf)
                     case "binary_sensor":
                         entity = await binary_sensor.new_binary_sensor(yaml_sensor_conf)
+                    case "text_sensor":
+                        entity = await text_sensor.new_text_sensor(yaml_sensor_conf)
+                        cg.add(entity.set_map(str_map))
 
                 async def handle_lambda():
                     lamb = sens_conf.get("handle_lambda", "return 0;")
@@ -371,10 +423,9 @@ async def to_code(config):
                         return_type=cg.uint16,
                     )
 
-                divider = sens_conf.get("divider", 1.0)
                 if callable(divider):
                     divider = divider()
-                cg.add(var.set_entity([
+                cg.add(entity.set_entity([
                     entity,
                     sens_conf.get("name"),
                     sens_conf.get("registryID"),
@@ -387,3 +438,4 @@ async def to_code(config):
                     await handle_lambda(),
                     "handle_lambda" in sens_conf
                 ]))
+                cg.add(var.add_entity(entity))

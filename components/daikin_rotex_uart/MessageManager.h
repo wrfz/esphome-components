@@ -1,6 +1,6 @@
 #pragma once
 
-#include "esphome/components/daikin_rotex_uart/Message.h"
+#include "esphome/components/daikin_rotex_uart/entity.h"
 #include "esphome/components/daikin_rotex_uart/buffer.h"
 #include <vector>
 
@@ -11,14 +11,14 @@ class TRequest;
 
 class TMessageManager {
 public:
-    void add(TMessage const& message);
+    void add(TEntity* pEntity);
     bool sendNextRequest(uart::UARTDevice&);
     void handleResponse(uart::UARTDevice&);
 private:
     void dumpRequests();
     std::shared_ptr<TRequest> getNextRequestToSend();
 
-    std::vector<TMessage> m_messages;
+    std::vector<TEntity*> m_messages;
     TBuffer m_buffer;
 };
 

@@ -99,6 +99,8 @@ daikin_rotex_uart:
   #outdoor_unit: ERLQ016CAW1
   #outdoor_unit: ERGA08DAV3
   entities:
+    mode_of_operating:
+      name: Betriebsart
     t_liq:
       name: Temperatur Flüssigkeitsleitung
     exv:
@@ -135,3 +137,5 @@ daikin_rotex_uart:
       name: Druckausgleich
     4_way_valve:
       name: 4-Wege-Ventil
+    defrost_operation:
+      name: Abtauvorgang
