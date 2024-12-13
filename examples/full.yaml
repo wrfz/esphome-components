@@ -103,6 +103,10 @@ daikin_rotex_uart:
       name: Betriebsart
     t_liq:
       name: Temperatur Flüssigkeitsleitung
+    liq_pressure:
+      name: Kältemitteldruck
+    t_liq2:
+      name: Kältemittetemperatur
     exv:
       name: Expansionsventil
     exch_temp:
