@@ -106,7 +106,7 @@ daikin_rotex_uart:
     liq_pressure:
       name: Kältemitteldruck
     t_liq2:
-      name: Kältemittetemperatur
+      name: Kältemitteltemperatur
     exv:
       name: Expansionsventil
     exch_temp:
