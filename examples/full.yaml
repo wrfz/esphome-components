@@ -132,6 +132,8 @@ daikin_rotex_uart:
       name: Rücklauftemperatur
     outdoor_temp:
       name: Outdoor Air Temp
+    tgt_cond_temp:
+      name: Zielverflüssigungstemperatur
     buh1:
       name: Heizstab Stufe 1
     buh2:

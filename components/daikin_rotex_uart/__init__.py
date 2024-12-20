@@ -83,17 +83,21 @@ sensor_configuration = [
     },
     {
         "type": "sensor",
-        "name": "tgt_liq_press",
+        "name": "tgt_cond_temp",
         "registryID": 0x10,
         "offset": 6,
         "signed": True,
         "dataSize": 2,
         "endian": Endian.LITTLE,
-        "divider": 26.0 + (1.0 / 24.0),
-        "unit_of_measurement": UNIT_PRESSURE_BAR,
+        "divider": 10,
+        "device_class": DEVICE_CLASS_TEMPERATURE,
+        "unit_of_measurement": UNIT_CELSIUS,
         "accuracy_decimals": 1,
         "state_class": STATE_CLASS_MEASUREMENT,
-        "icon": "mdi:arrow-collapse-all"
+        "handle_lambda": """
+            const int16_t value = static_cast<int16_t>(data[1] << 8 | data[0]);
+            return value / 256.0 * 10.0 * 10.0;
+        """
     },
     {
         "type": "sensor",
