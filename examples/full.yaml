@@ -98,6 +98,7 @@ daikin_rotex_uart:
   #outdoor_unit: RRLQ011CAW1
   #outdoor_unit: ERLQ016CAW1
   #outdoor_unit: ERGA08DAV3
+  #outdoor_unit: RRGA08DAV3
   entities:
     mode_of_operating:
       name: Betriebsart
