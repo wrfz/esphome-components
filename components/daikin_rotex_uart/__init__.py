@@ -6,10 +6,80 @@ from esphome.cpp_types import std_ns
 from esphome.components import sensor, binary_sensor, text_sensor, uart
 from esphome.components.uart import UARTComponent
 from enum import Enum
+import logging
 
 CODEOWNERS = ["@wrfz"]
 AUTO_LOAD = ["binary_sensor", "sensor", "text_sensor"]
 DEPENDENCIES = ["uart"]
+
+translations = {
+    "de": {  # German
+
+    },
+    "en": {  # English
+        
+    },
+    "it": {  # Italian
+             
+    }
+}
+
+_LOGGER = logging.getLogger(__name__)
+
+CONF_LANGUAGE = 'language'
+SUPPORTED_LANGUAGES = ['en', 'de', 'it']
+
+# Current language
+current_language = "de"
+delayed_translate_tag = "DELAYED_TRANSLATE:"
+
+def set_language(lang):
+    global current_language
+    if lang in translations:
+        _LOGGER.info("[Translate] Setting language to '%s'", lang)
+        current_language = lang
+    else:
+        _LOGGER.warning("[Translate] Language '%s' not found in dictionary. Falling back to English.", lang)
+        current_language = "en"  # Fallback
+
+def delayed_translate(key: str) -> str:
+    return delayed_translate_tag + key
+
+def translate(key: str) -> str:
+
+    global current_language
+    lang_translations = translations.get(current_language, translations.get("en", {}))
+
+    if key in lang_translations:
+        translated = lang_translations[key]
+        _LOGGER.info("[Translate] Key '%s' found in language '%s' -> '%s'",key, current_language, translated)
+        return translated
+
+    if "en" in translations and key in translations["en"]:
+        _LOGGER.warning(
+            "[Translate] Key '%s' not found in language '%s'. Falling back to English.", 
+            key, current_language
+        )
+        return translations["en"][key]
+    _LOGGER.error(
+        "[Translate] Key '%s' not found in language '%s' or in fallback language 'en'. Returning error message.", 
+        key, current_language
+    )
+    return f"ERROR: Key '{key}' not found"
+
+def apply_delayed_translate(key: str) -> str:
+    if isinstance(key, str) and key.startswith(delayed_translate_tag):
+        stripped_key = key[len(delayed_translate_tag):]
+        return translate(stripped_key)
+    return key
+
+def apply_translation_to_mapping(mapping: dict) -> dict:
+    return {key: apply_delayed_translate(value) for key, value in mapping.items()}
+
+def apply_translation_to_entityname(yaml_sensor_conf, id):
+    if "name" in yaml_sensor_conf and yaml_sensor_conf["name"].strip() == "auto":
+        yaml_sensor_conf["name"] = translate(id)
+
 
 daikin_rotex_uart_ns = cg.esphome_ns.namespace("daikin_rotex_uart")
 DaikinRotexUARTComponent = daikin_rotex_uart_ns.class_(
@@ -257,13 +327,13 @@ sensor_configuration = [
         "dataSize": 1,
         "icon": "mdi:sun-snowflake-variant",
         "map": {
-            0x00: "Standby",
-            0x01: "Heizen",
-            0x02: "Kühlen",
+            0x00: delayed_translate("standby"),
+            0x01: delayed_translate("heating"),
+            0x02: delayed_translate("cooling"),
             0x03: "???",
-            0x04: "Warmwasserbereitung",
-            0x05: "Heizen + Warmwasser",
-            0x06: "Kühlen + Warmwasser"
+            0x04: delayed_translate("hot_water"),
+            0x05: delayed_translate("heating_hot_water"),
+            0x06: delayed_translate("cooling_hot_water"),
         },
         "handle_lambda": """
             return data[0] >> 4;
@@ -417,6 +487,7 @@ CONFIG_SCHEMA = cv.Schema(
         cv.GenerateID(): cv.declare_id(DaikinRotexUARTComponent),
         cv.Required(CONF_UART_ID): cv.use_id(UARTComponent),
         cv.Required(CONF_OUTDOR_UNIT): cv.ensure_list(cv.enum(OUTDOOR_UNIT), validate_setoutdoor_unit),
+        cv.Optional(CONF_LANGUAGE, default="en"): cv.string,        
         cv.Required(CONF_ENTITIES): cv.Schema(
             entity_schemas
         )
@@ -434,6 +505,11 @@ FINAL_VALIDATE_SCHEMA = uart.final_validate_device_schema(
 )
 
 async def to_code(config):
+
+    if CONF_LANGUAGE in config:
+        lang = config[CONF_LANGUAGE]
+        set_language(lang)
+
     cg.add(cg.RawStatement('#include "esphome/components/daikin_rotex_uart/unit_converter.h"'))
 
     u8_ptr = std_ns.class_("uint8_t*")
@@ -447,7 +523,9 @@ async def to_code(config):
                 entity = None
 
                 divider = sens_conf.get("divider", 1.0)
-                mapping = sens_conf.get("map", {})
+                # translate both map and name (if auto)
+                mapping = apply_translation_to_mapping(sens_conf.get("map", {}))
+                apply_translation_to_entityname(yaml_sensor_conf,sens_conf.get("name"))                
                 str_map = "|".join([f"0x{int(key * divider) & 0xFFFF :02X}:{value}" for key, value in mapping.items()])
 
                 match sens_conf.get("type"):

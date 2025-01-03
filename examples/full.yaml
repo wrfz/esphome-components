@@ -93,6 +93,8 @@ uart:
 daikin_rotex_uart:
   id: rotext_hpsu_uart
   uart_id: uart_bus
+  # tranlation language, supported: de, en, it. If not set, the default language is de
+  language: de
   #outdoor_unit: RRLQ006CAV3  #Please comment in your outdoor unit
   #outdoor_unit: RRLQ008CAV3
   #outdoor_unit: RRLQ011CAW1
@@ -101,48 +103,48 @@ daikin_rotex_uart:
   #outdoor_unit: RRGA08DAV3
   entities:
     mode_of_operating:
-      name: Betriebsart
+      name: auto # if set to auto, the name will be translated from dictionary in the specified language
     t_liq:
-      name: Temperatur Flüssigkeitsleitung
+      name: auto
     liq_pressure:
-      name: Kältemitteldruck
+      name: auto
     t_liq2:
-      name: Kältemitteltemperatur
+      name: auto
     exv:
-      name: Expansionsventil
+      name: auto
     exch_temp:
-      name: Temperatur Lamellenwärmetauscher
+      name: auto
     fan_speed:
-      name: Ventilatordrehzahl
+      name: auto
     temp_after_compr:
-      name: Temperatur nach Kältemittelverdichter
+      name: auto
     inv_freq:
-      name: Kompressor Drehzahl
+      name: auto
     inv_prim_current:
-      name: INV Primary Current
+      name: auto
     inv_sec_current:
-      name: INV Secondary Current
+      name: auto
     dhw_temp:
-      name: DHW tank temp
+      name: auto
     tv:
-      name: Vorlauftemeratur (TV)
+      name: auto
     tv_bh:
-      name: Vorlauftemeratur (TVBH)
+      name: auto
     tr:
-      name: Rücklauftemperatur
+      name: auto
     outdoor_temp:
-      name: Outdoor Air Temp
+      name: auto
     tgt_cond_temp:
-      name: Zielverflüssigungstemperatur
+      name: auto
     buh1:
-      name: Heizstab Stufe 1
+      name: auto
     buh2:
-      name: Heizstab Stufe 2
+      name: auto
     buh_bsh:
-      name: Heizstab Speicher
+      name: auto
     press_eq:
-      name: Druckausgleich
+      name: auto
     4_way_valve:
-      name: 4-Wege-Ventil
+      name: auto
     defrost_operation:
-      name: Abtauvorgang
+      name: auto
