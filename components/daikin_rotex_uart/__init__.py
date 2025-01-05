@@ -20,6 +20,7 @@ translations = {
         "hot_water": "Warmwasserbereitung",
         "heating_hot_water": "Heizen + Warmwasser",
         "cooling_hot_water": "Kühlen + Warmwasser",
+        #Entities
         "mode_of_operating": "Betriebsart",
         "t_liq": "Temperatur Flüssigkeitsleitung",
         "liq_pressure": "Kältemitteldruck",
@@ -51,6 +52,7 @@ translations = {
         "hot_water": "Hot water preparation",
         "heating_hot_water": "Heating + Hot water",
         "cooling_hot_water": "Cooling + Hot water",
+        #Entities        
         "mode_of_operating": "Mode of Operating",
         "t_liq": "Liquid Line Temperature",
         "liq_pressure": "Refrigerant Pressure",
@@ -82,7 +84,8 @@ translations = {
         "hot_water": "Preparazione acqua calda",
         "heating_hot_water": "Riscaldamento + Acqua calda",
         "cooling_hot_water": "Raffreddamento + Acqua calda",
-        "mode_of_operating": "Modalità di funzionamento",
+        #Entities
+        "mode_of_operating": "Stato di funzionamento",
         "t_liq": "Temperatura linea liquido",
         "liq_pressure": "Pressione refrigerante",
         "t_liq2": "Temperatura refrigerante",
@@ -102,7 +105,7 @@ translations = {
         "buh1": "Resistenza di riscaldamento livello 1",
         "buh2": "Resistenza di riscaldamento livello 2",
         "buh_bsh": "Resistenza di riscaldamento accumulo",
-        "press_eq": "Equilibrio di pressione",
+        "press_eq": "Equalizzatore di pressione",
         "4_way_valve": "Valvola a 4 vie",
         "defrost_operation": "Sbrinamento"
     }
