@@ -93,8 +93,6 @@ uart:
 daikin_rotex_uart:
   id: rotext_hpsu_uart
   uart_id: uart_bus
-  # tranlation language, supported: de, en, it. If not set, the default language is de
-  language: de
   #outdoor_unit: RRLQ006CAV3  #Please comment in your outdoor unit
   #outdoor_unit: RRLQ008CAV3
   #outdoor_unit: RRLQ011CAW1
@@ -103,48 +101,48 @@ daikin_rotex_uart:
   #outdoor_unit: RRGA08DAV3
   entities:
     mode_of_operating:
-      name: auto # if set to auto, the name will be translated from dictionary in the specified language
+      name: Mode of Operating
     t_liq:
-      name: auto
+      name: Liquid Line Temperature
     liq_pressure:
-      name: auto
+      name: Refrigerant Pressure
     t_liq2:
-      name: auto
+      name: Refrigerant Temperature
     exv:
-      name: auto
+      name: Expansion Valve
     exch_temp:
-      name: auto
+      name: Fin Heat Exchanger Temperature
     fan_speed:
-      name: auto
+      name: Fan Speed
     temp_after_compr:
-      name: auto
+      name: Temperature After Compressor
     inv_freq:
-      name: auto
+      name: Compressor Frequency
     inv_prim_current:
-      name: auto
+      name: INV Primary Current
     inv_sec_current:
-      name: auto
+      name: INV Secondary Current
     dhw_temp:
-      name: auto
+      name: DHW Tank Temperature
     tv:
-      name: auto
+      name: Flow Temperature (TV)
     tv_bh:
-      name: auto
+      name: Flow Temperature (TVBH)
     tr:
-      name: auto
+      name: Return Temperature
     outdoor_temp:
-      name: auto
+      name: Outdoor Air Temperature
     tgt_cond_temp:
-      name: auto
+      name: Target Condensation Temperature
     buh1:
-      name: auto
+      name: Heating Rod Stage 1
     buh2:
-      name: auto
+      name: Heating Rod Stage 2
     buh_bsh:
-      name: auto
+      name: Heating Rod Storage
     press_eq:
-      name: auto
+      name: Pressure Equalization
     4_way_valve:
-      name: auto
+      name: 4-Way Valve
     defrost_operation:
-      name: auto
+      name: Defrost Operation

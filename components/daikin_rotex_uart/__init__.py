@@ -5,6 +5,15 @@ from esphome.core import Lambda
 from esphome.cpp_types import std_ns
 from esphome.components import sensor, binary_sensor, text_sensor, uart
 from esphome.components.uart import UARTComponent
+from .translations.translate import (
+    CONF_LANGUAGE,
+    SUPPORTED_LANGUAGES,
+    delayed_translate,
+    apply_translation_to_mapping,
+    set_language,
+    check_translations_integrity
+)
+
 from enum import Enum
 import logging
 
@@ -12,161 +21,10 @@ CODEOWNERS = ["@wrfz"]
 AUTO_LOAD = ["binary_sensor", "sensor", "text_sensor"]
 DEPENDENCIES = ["uart"]
 
-translations = {
-    "de": {  # German
-        "standby": "Standby",
-        "heating": "Heizen",
-        "cooling": "Kühlen",
-        "hot_water": "Warmwasserbereitung",
-        "heating_hot_water": "Heizen + Warmwasser",
-        "cooling_hot_water": "Kühlen + Warmwasser",
-        #Entities
-        "mode_of_operating": "Betriebsart",
-        "t_liq": "Temperatur Flüssigkeitsleitung",
-        "liq_pressure": "Kältemitteldruck",
-        "t_liq2": "Kältemitteltemperatur",
-        "exv": "Expansionsventil",
-        "exch_temp": "Temperatur Lamellenwärmetauscher",
-        "fan_speed": "Ventilatordrehzahl",
-        "temp_after_compr": "Temperatur nach Kältemittelverdichter",
-        "inv_freq": "Kompressor Drehzahl",
-        "inv_prim_current": "INV Primary Current",
-        "inv_sec_current": "INV Secondary Current",
-        "dhw_temp": "DHW tank temp",
-        "tv": "Vorlauftemeratur (TV)",
-        "tv_bh": "Vorlauftemeratur (TVBH)",
-        "tr": "Rücklauftemperatur",
-        "outdoor_temp": "Outdoor Air Temp",
-        "tgt_cond_temp": "Zielverflüssigungstemperatur",
-        "buh1": "Heizstab Stufe 1",
-        "buh2": "Heizstab Stufe 2",
-        "buh_bsh": "Heizstab Speicher",
-        "press_eq": "Druckausgleich",
-        "4_way_valve": "4-Wege-Ventil",
-        "defrost_operation": "Abtauvorgang"
-    },
-    "en": {  # English
-        "standby": "Standby",
-        "heating": "Heating",
-        "cooling": "Cooling",
-        "hot_water": "Hot water preparation",
-        "heating_hot_water": "Heating + Hot water",
-        "cooling_hot_water": "Cooling + Hot water",
-        #Entities        
-        "mode_of_operating": "Mode of Operating",
-        "t_liq": "Liquid Line Temperature",
-        "liq_pressure": "Refrigerant Pressure",
-        "t_liq2": "Refrigerant Temperature",
-        "exv": "Expansion Valve",
-        "exch_temp": "Fin Heat Exchanger Temperature",
-        "fan_speed": "Fan Speed",
-        "temp_after_compr": "Temperature After Compressor",
-        "inv_freq": "Compressor Frequency",
-        "inv_prim_current": "INV Primary Current",
-        "inv_sec_current": "INV Secondary Current",
-        "dhw_temp": "DHW Tank Temperature",
-        "tv": "Flow Temperature (TV)",
-        "tv_bh": "Flow Temperature (TVBH)",
-        "tr": "Return Temperature",
-        "outdoor_temp": "Outdoor Air Temperature",
-        "tgt_cond_temp": "Target Condensation Temperature",
-        "buh1": "Heating Rod Stage 1",
-        "buh2": "Heating Rod Stage 2",
-        "buh_bsh": "Heating Rod Storage",
-        "press_eq": "Pressure Equalization",
-        "4_way_valve": "4-Way Valve",
-        "defrost_operation": "Defrost Operation"
-    },
-    "it": {  # Italian
-        "standby": "Standby",
-        "heating": "Riscaldamento",
-        "cooling": "Raffreddamento",
-        "hot_water": "Preparazione acqua calda",
-        "heating_hot_water": "Riscaldamento + Acqua calda",
-        "cooling_hot_water": "Raffreddamento + Acqua calda",
-        #Entities
-        "mode_of_operating": "Stato di funzionamento",
-        "t_liq": "Temperatura linea liquido",
-        "liq_pressure": "Pressione refrigerante",
-        "t_liq2": "Temperatura refrigerante",
-        "exv": "Valvola di espansione",
-        "exch_temp": "Temperatura scambiatore lamellare",
-        "fan_speed": "Velocità ventola",
-        "temp_after_compr": "Temperatura dopo compressore",
-        "inv_freq": "Frequenza compressore",
-        "inv_prim_current": "Corrente primaria INV",
-        "inv_sec_current": "Corrente secondaria INV",
-        "dhw_temp": "Temperatura serbatoio ACS",
-        "tv": "Temperatura di mandata (TV)",
-        "tv_bh": "Temperatura di mandata (TVBH)",
-        "tr": "Temperatura di ritorno",
-        "outdoor_temp": "Temperatura aria esterna",
-        "tgt_cond_temp": "Temperatura di condensazione target",
-        "buh1": "Resistenza di riscaldamento livello 1",
-        "buh2": "Resistenza di riscaldamento livello 2",
-        "buh_bsh": "Resistenza di riscaldamento accumulo",
-        "press_eq": "Equalizzatore di pressione",
-        "4_way_valve": "Valvola a 4 vie",
-        "defrost_operation": "Sbrinamento"
-    }
-}
-
 _LOGGER = logging.getLogger(__name__)
 
-CONF_LANGUAGE = 'language'
-SUPPORTED_LANGUAGES = ['en', 'de', 'it']
-
-# Current language
-current_language = "de"
-delayed_translate_tag = "DELAYED_TRANSLATE:"
-
-def set_language(lang):
-    global current_language
-    if lang in translations:
-        _LOGGER.info("[Translate] Setting language to '%s'", lang)
-        current_language = lang
-    else:
-        _LOGGER.warning("[Translate] Language '%s' not found in dictionary. Falling back to English.", lang)
-        current_language = "en"  # Fallback
-
-def delayed_translate(key: str) -> str:
-    return delayed_translate_tag + key
-
-def translate(key: str) -> str:
-
-    global current_language
-    lang_translations = translations.get(current_language, translations.get("en", {}))
-
-    if key in lang_translations:
-        translated = lang_translations[key]
-        _LOGGER.info("[Translate] Key '%s' found in language '%s' -> '%s'",key, current_language, translated)
-        return translated
-
-    if "en" in translations and key in translations["en"]:
-        _LOGGER.warning(
-            "[Translate] Key '%s' not found in language '%s'. Falling back to English.", 
-            key, current_language
-        )
-        return translations["en"][key]
-    _LOGGER.error(
-        "[Translate] Key '%s' not found in language '%s' or in fallback language 'en'. Returning error message.", 
-        key, current_language
-    )
-    return f"ERROR: Key '{key}' not found"
-
-def apply_delayed_translate(key: str) -> str:
-    if isinstance(key, str) and key.startswith(delayed_translate_tag):
-        stripped_key = key[len(delayed_translate_tag):]
-        return translate(stripped_key)
-    return key
-
-def apply_translation_to_mapping(mapping: dict) -> dict:
-    return {key: apply_delayed_translate(value) for key, value in mapping.items()}
-
-def apply_translation_to_entityname(yaml_sensor_conf, id):
-    if "name" in yaml_sensor_conf and yaml_sensor_conf["name"].strip() == "auto":
-        yaml_sensor_conf["name"] = translate(id)
-
+# Before starting, check the integrity of the translation dictionaries
+check_translations_integrity()
 
 daikin_rotex_uart_ns = cg.esphome_ns.namespace("daikin_rotex_uart")
 DaikinRotexUARTComponent = daikin_rotex_uart_ns.class_(
@@ -574,7 +432,7 @@ CONFIG_SCHEMA = cv.Schema(
         cv.GenerateID(): cv.declare_id(DaikinRotexUARTComponent),
         cv.Required(CONF_UART_ID): cv.use_id(UARTComponent),
         cv.Required(CONF_OUTDOR_UNIT): cv.ensure_list(cv.enum(OUTDOOR_UNIT), validate_setoutdoor_unit),
-        cv.Optional(CONF_LANGUAGE, default="de"): cv.string,        
+        cv.Optional(CONF_LANGUAGE, default="de"): cv.enum(SUPPORTED_LANGUAGES, lower=True, space="_"),
         cv.Required(CONF_ENTITIES): cv.Schema(
             entity_schemas
         )
@@ -610,9 +468,8 @@ async def to_code(config):
                 entity = None
 
                 divider = sens_conf.get("divider", 1.0)
-                # translate both map and name (if auto)
+                # translate mapping
                 mapping = apply_translation_to_mapping(sens_conf.get("map", {}))
-                apply_translation_to_entityname(yaml_sensor_conf,sens_conf.get("name"))                
                 str_map = "|".join([f"0x{int(key * divider) & 0xFFFF :02X}:{value}" for key, value in mapping.items()])
 
                 match sens_conf.get("type"):
