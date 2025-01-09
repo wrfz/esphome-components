@@ -146,3 +146,4 @@ daikin_rotex_uart:
       name: 4-Way Valve
     defrost_operation:
       name: Defrost Operation
+

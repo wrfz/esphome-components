@@ -146,3 +146,4 @@ daikin_rotex_uart:
       name: Valvola a 4 vie
     defrost_operation:
       name: Sbrinamento
+
