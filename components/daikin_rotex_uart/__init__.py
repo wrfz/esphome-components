@@ -209,9 +209,9 @@ sensor_configuration = [
         "signed": True,
         "dataSize": 2,
         "endian": Endian.LITTLE,
-        "divider": 10,
+        "divider": 1,
         "device_class": DEVICE_CLASS_VOLTAGE,
-        "unit_of_measurement": CONF_VOLTAGE,
+        "unit_of_measurement": UNIT_VOLT,
         "accuracy_decimals": 1,
         "state_class": STATE_CLASS_MEASUREMENT
     },
