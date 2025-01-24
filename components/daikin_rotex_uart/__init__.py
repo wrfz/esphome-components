@@ -203,6 +203,20 @@ sensor_configuration = [
     },
     {
         "type": "sensor",
+        "name": "voltage",
+        "registryID": 0x21,
+        "offset": 4,
+        "signed": True,
+        "dataSize": 2,
+        "endian": Endian.LITTLE,
+        "divider": 10,
+        "device_class": DEVICE_CLASS_VOLTAGE,
+        "unit_of_measurement": CONF_VOLTAGE,
+        "accuracy_decimals": 1,
+        "state_class": STATE_CLASS_MEASUREMENT
+    },
+    {
+        "type": "sensor",
         "name": "inv_freq",
         "registryID": 0x30,
         "offset": 0,

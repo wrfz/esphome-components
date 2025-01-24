@@ -146,3 +146,5 @@ daikin_rotex_uart:
       name: 4-Wege-Ventil
     defrost_operation:
       name: Abtauvorgang
+    voltage:
+      name: Spannung
