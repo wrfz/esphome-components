@@ -97,6 +97,7 @@ daikin_rotex_uart:
   #outdoor_unit: RRLQ008CAV3
   #outdoor_unit: RRLQ011CAW1
   #outdoor_unit: ERLQ016CAW1
+  #outdoor_unit: ERGA06EAV3
   #outdoor_unit: ERGA08DAV3
   #outdoor_unit: RRGA08DAV3
   entities:
@@ -146,4 +147,5 @@ daikin_rotex_uart:
       name: Valvola a 4 vie
     defrost_operation:
       name: Sbrinamento
-
+    #voltage:  # Currently only known to be supported by ECH2O
+    #  name: Tensione

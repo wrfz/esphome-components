@@ -49,6 +49,7 @@ RRLQ006CAV3 = "RRLQ006CAV3"
 RRLQ008CAV3 = "RRLQ008CAV3"
 RRLQ011CAW1 = "RRLQ011CAW1"
 ERLQ016CAW1 = "ERLQ016CAW1"
+ERGA06EAV3 = "ERGA06EAV3"
 ERGA08DAV3 = "ERGA08DAV3"
 RRGA08DAV3 = "RRGA08DAV3"
 
@@ -57,8 +58,9 @@ OUTDOOR_UNIT = {
     RRLQ008CAV3: 2,
     RRLQ011CAW1: 3,
     ERLQ016CAW1: 4,
-    ERGA08DAV3: 5,
-    RRGA08DAV3: 6
+    ERGA06EAV3: 5,
+    ERGA08DAV3: 6,
+    RRGA08DAV3: 7
 }
 
 current_outdoor_unit = None
@@ -68,6 +70,7 @@ fan_divider = {
     RRLQ008CAV3: 0.1,
     RRLQ011CAW1: 0.1 * 0.1,
     ERLQ016CAW1: 0.1 * 0.1,
+    ERGA06EAV3: 0.1,
     ERGA08DAV3: 0.1 * 0.1,
     RRGA08DAV3: 0.1 * 0.1,
 }
@@ -213,6 +216,20 @@ sensor_configuration = [
         "divider": 10,
         "device_class": DEVICE_CLASS_CURRENT,
         "unit_of_measurement": UNIT_AMPERE,
+        "accuracy_decimals": 1,
+        "state_class": STATE_CLASS_MEASUREMENT
+    },
+    {
+        "type": "sensor",
+        "name": "voltage",
+        "registryID": 0x21,
+        "offset": 4,
+        "signed": True,
+        "dataSize": 2,
+        "endian": Endian.LITTLE,
+        "divider": 1,
+        "device_class": DEVICE_CLASS_VOLTAGE,
+        "unit_of_measurement": UNIT_VOLT,
         "accuracy_decimals": 1,
         "state_class": STATE_CLASS_MEASUREMENT
     },
