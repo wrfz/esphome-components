@@ -11,33 +11,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check out repository
-      uses: actions/checkout@v3
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
-
-    - name: Install Node.js and Wokwi CLI
+    - name: Install wokwi-cli
       run: |
-        sudo apt update
-        sudo apt install -y git npm
-        echo "Install Wokwi CLI"
-        git clone https://github.com/wokwi/wokwi-cli
-        cd wokwi-cli
-        npm install
-        npm run build  # Falls ein Build-Schritt erforderlich ist
-        sudo cp bin/wokwi-cli /usr/local/bin/  # Passe den Pfad an, falls nötig
-        echo "After manual install -> which wokwi-cli:"
-        which wokwi-cli || echo "wokwi-cli not found after manual install"
-
-    - name: Install Python dependencies
-      run: |
-        pip install esphome pytest pyserial
-
-    - name: Run Wokwi simulation with UART tests
-      run: |
-        wokwi-cli exec \
-          --project=./wokwi-project \
-          --command="pytest test/test_uart_test.py --disable-warnings"
+        wget -q -O /usr/local/bin/wokwi-cli https://github.com/wokwi/wokwi-cli/releases/latest/download/wokwi-cli-linuxstatic-x64
+        chmod +x /usr/local/bin/wokwi-cli
+      shell: bash
+    - run: |
+        wokwi-cli --timeout "${{ inputs.timeout }}" --expect-text "$CI_EXPECT_TEXT" \
+          ${{ inputs.diagram_file != '' && format('--diagram-file "{0}"', inputs.diagram_file) || '' }} \
+          ${{ inputs.elf != '' && format('--elf "{0}"', inputs.elf) || '' }} \
+          --fail-text "$CI_FAIL_TEXT" --scenario "${{ inputs.scenario }}" "${GITHUB_WORKSPACE}/${{ inputs.path }}" \
+          --serial-log-file "${{ inputs.serial_log_file }}"
+      env:
+        WOKWI_CLI_TOKEN: ${{ inputs.token }}
+        FORCE_COLOR: 2  # Enables color output - see https://github.com/chalk/supports-color/issues/106
+        CI_EXPECT_TEXT: ${{ inputs.expect_text }}
+        CI_FAIL_TEXT: ${{ inputs.fail_text }}
+      shell: bash
