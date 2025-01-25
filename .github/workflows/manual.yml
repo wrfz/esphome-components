@@ -26,6 +26,9 @@ jobs:
         git clone https://github.com/wokwi/wokwi-cli
         cd wokwi-cli
         npm install
+        echo "run -> which wokwi-cli"
+        which wokwi-cli
+        echo "run -> sudo npm link"
         sudo npm link  # Macht die CLI global verfügbar
 
     - name: Install Python dependencies
