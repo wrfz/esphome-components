@@ -27,9 +27,10 @@ jobs:
         git clone https://github.com/wokwi/wokwi-cli
         cd wokwi-cli
         npm install
-        sudo npm install -g .
-        echo "After npm install -g -> which wokwi-cli:"
-        which wokwi-cli || echo "wokwi-cli not found after npm install -g"
+        npm run build  # Falls ein Build-Schritt erforderlich ist
+        sudo cp bin/wokwi-cli /usr/local/bin/  # Passe den Pfad an, falls nötig
+        echo "After manual install -> which wokwi-cli:"
+        which wokwi-cli || echo "wokwi-cli not found after manual install"
 
     - name: Install Python dependencies
       run: |
