@@ -31,6 +31,7 @@ jobs:
         which wokwi-cli || echo "wokwi-cli not found yet"
         echo "Run npm link"
         sudo npm link
+        export PATH=$PATH:/usr/local/bin
         echo "After npm link -> which wokwi-cli:"
         which wokwi-cli || echo "wokwi-cli not found after npm link"
         echo "Check npm global packages"
