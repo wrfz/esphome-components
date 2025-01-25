@@ -16,6 +16,11 @@ jobs:
         wget -q -O /usr/local/bin/wokwi-cli https://github.com/wokwi/wokwi-cli/releases/latest/download/wokwi-cli-linuxstatic-x64
         chmod +x /usr/local/bin/wokwi-cli
       shell: bash
+    - name: Verify environment variables
+      run: |
+        echo "WOKWI_CLI_TOKEN: $WOKWI_CLI_TOKEN"
+        echo "CI_EXPECT_TEXT: $CI_EXPECT_TEXT"
+        echo "CI_FAIL_TEXT: $CI_FAIL_TEXT"
     - run: |
         wokwi-cli --timeout "${{ inputs.timeout }}" --expect-text "$CI_EXPECT_TEXT" \
           ${{ inputs.diagram_file != '' && format('--diagram-file "{0}"', inputs.diagram_file) || '' }} \
