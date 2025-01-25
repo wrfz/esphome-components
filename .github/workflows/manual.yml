@@ -11,24 +11,35 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v3
-  
-      - name: Set up Node.js and install Wokwi CLI
-        run: |
-          sudo apt update
-          sudo apt install -y npm
-          npm install -g @wokwi/cli
-  
-      - name: Build C++ Project
-        run: |
-          mkdir build
-          cd build
-          cmake ..
-          make
-  
-      - name: Run Wokwi Simulation Test
-        run: |
-          wokwi-cli exec \
-            --project=./wokwi-project \
-            --command="./build/your-test-executable"
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install Node.js and Wokwi CLI
+      run: |
+        sudo apt update
+        sudo apt install -y git npm
+        git clone https://github.com/wokwi/wokwi-cli
+        cd wokwi-cli
+        npm install
+        echo "Verifiziere Installation:"
+        echo "Vor npm link -> which wokwi-cli:"
+        which wokwi-cli || echo "wokwi-cli nicht gefunden"
+        echo "Führe sudo npm link aus:"
+        sudo npm link
+        echo "Nach npm link -> which wokwi-cli:"
+        which wokwi-cli || echo "wokwi-cli nicht gefunden"
+
+    - name: Install Python dependencies
+      run: |
+        pip install esphome pytest pyserial
+
+    - name: Run Wokwi simulation with UART tests
+      run: |
+        wokwi-cli exec \
+          --project=./wokwi-project \
+          --command="pytest test/test_uart_test.py --disable-warnings"
