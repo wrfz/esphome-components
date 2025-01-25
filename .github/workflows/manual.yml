@@ -23,16 +23,18 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y git npm
+        echo "Install Wokwi CLI"
         git clone https://github.com/wokwi/wokwi-cli
         cd wokwi-cli
         npm install
-        echo "Verifiziere Installation:"
-        echo "Vor npm link -> which wokwi-cli:"
-        which wokwi-cli || echo "wokwi-cli nicht gefunden"
-        echo "Führe sudo npm link aus:"
+        echo "Before npm link -> which wokwi-cli:"
+        which wokwi-cli || echo "wokwi-cli not found yet"
+        echo "Run npm link"
         sudo npm link
-        echo "Nach npm link -> which wokwi-cli:"
-        which wokwi-cli || echo "wokwi-cli nicht gefunden"
+        echo "After npm link -> which wokwi-cli:"
+        which wokwi-cli || echo "wokwi-cli not found after npm link"
+        echo "Check npm global packages"
+        npm list -g --depth=0
 
     - name: Install Python dependencies
       run: |
