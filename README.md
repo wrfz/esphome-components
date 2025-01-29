@@ -27,9 +27,14 @@ Hier zwei geeignete Modelle:
 Alternativ können auch andere ESP32-Boards (z. B. **ESP32-S3-WROOM**) verwendet werden.
 In dem Fall ist allerdings ein zusätzlicher Pegelwandler erforderlich, um die 3,3V-Pegel des ESP32 auf die 5V der HPSU anzuheben.
 
-## ESP anschließen
+# Achtung!!
+Die Verwendung von Daikin-Rotex-HPSU-CAN kann potenziell Ihr Heizsystem beschädigen. Die Nutzung erfolgt auf eigene Verantwortung. Ich übernehme keine Haftung für entstandene Schäden.
+
+Bitte beachten Sie, dass durch die Verwendung von Daikin-Rotex-HPSU-CAN möglicherweise Ihre Garantie sowie der Support durch den Hersteller erlischt!
 
 Wichtig! Vor den nächsten Schritten unbedingt das Innen- und Außengerät stromlos machen! ⚠️
+
+## ESP anschließen
 
 Der ESP32 wird mit der `X10A`-Schnittstelle verbunden, die auf der A1P-Platine der Luftwärmepumpe zu finden ist (auf der Platine beschriftet). Die genaue Position und der Anschluss sind in der Rotex bzw. Daikin Wartungsanleitung ausführlich beschrieben.
 
