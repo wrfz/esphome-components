@@ -102,7 +102,7 @@ daikin_rotex_uart:
   #outdoor_unit: RRGA08DAV3
   entities:
     mode_of_operating:
-      name: Betriebsart
+      name: Betriebsart (UART)
     t_liq:
       name: Temperatur Flüssigkeitsleitung
     liq_pressure:

@@ -4,7 +4,7 @@
 """
 
 translations_de = {
-    "standby": "Standby",
+    "standby": "Bereitschaft",
     "heating": "Heizen",
     "cooling": "Kühlen",
     "hot_water": "Warmwasserbereitung",
