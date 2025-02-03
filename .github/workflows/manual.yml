@@ -50,6 +50,8 @@ jobs:
         cp examples/full_de.yaml ./full.yaml
         sed -i 's/#outdoor_unit: RRLQ006CAV3/outdoor_unit: RRLQ006CAV3/' full.yaml
 
+        cat full.yaml
+
         cp .github/workflows/resources/secrets.yaml .
 
         #cp .github/workflows/src/extract_external_components_block.py .
