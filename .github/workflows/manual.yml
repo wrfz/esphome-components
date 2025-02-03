@@ -39,3 +39,6 @@ jobs:
           --fail-text "$CI_FAIL_TEXT" --scenario "${{ inputs.scenario }}" "${GITHUB_WORKSPACE}/${{ inputs.path }}" \
           --serial-log-file "${{ inputs.serial_log_file }}"
       shell: bash
+    - name: List directory contents
+      run: ls -al
+      shell: bash
