@@ -16,6 +16,7 @@ jobs:
 
     - name: Prepare full.yaml
       run: |
+        ls -al
         cp examples/full.yaml .
         cp .github/workflows/resources/secrets.yaml .
 
