@@ -48,6 +48,8 @@ jobs:
       run: |
         ls -al
         cp examples/full_de.yaml ./full.yaml
+        sed -i 's/^#outdoor_unit/outdoor_unit/' full.yaml
+
         cp .github/workflows/resources/secrets.yaml .
 
         #cp .github/workflows/src/extract_external_components_block.py .
