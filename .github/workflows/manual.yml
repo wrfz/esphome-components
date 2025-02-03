@@ -26,6 +26,9 @@ jobs:
         echo "WOKWI_CLI_TOKEN: $WOKWI_CLI_TOKEN"
         echo "CI_EXPECT_TEXT: $CI_EXPECT_TEXT"
         echo "CI_FAIL_TEXT: $CI_FAIL_TEXT"
+    - name: List directory contents
+      run: ls -al
+      shell: bash
     - name: Run CLI
       env:
         FORCE_COLOR: 2  # Enables color output - see https://github.com/chalk/supports-color/issues/106
@@ -38,7 +41,4 @@ jobs:
           ${{ inputs.elf != '' && format('--elf "{0}"', inputs.elf) || '' }} \
           --fail-text "$CI_FAIL_TEXT" --scenario "${{ inputs.scenario }}" "${GITHUB_WORKSPACE}/${{ inputs.path }}" \
           --serial-log-file "${{ inputs.serial_log_file }}"
-      shell: bash
-    - name: List directory contents
-      run: ls -al
       shell: bash
