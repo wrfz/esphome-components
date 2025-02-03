@@ -27,7 +27,7 @@ jobs:
         echo "CI_EXPECT_TEXT: $CI_EXPECT_TEXT"
         echo "CI_FAIL_TEXT: $CI_FAIL_TEXT"
     - name: List directory contents
-      run: ls ../ -al
+      run: pwd
       shell: bash
     - name: Run CLI
       env:
