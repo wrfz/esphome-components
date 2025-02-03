@@ -74,7 +74,7 @@ jobs:
         esphome compile full.yaml
 
         # rename file
-        mv .esphome/build/rotex/.pioenvs/rotex/firmware.factory.bin .esphome/build/rotex/.pioenvs/rotex/rotex.factory-gpios-tx05-rx06.bin  
+        #mv .esphome/build/rotex/.pioenvs/rotex/firmware.factory.bin .esphome/build/rotex/.pioenvs/rotex/rotex.factory-gpios-tx05-rx06.bin  
 
     - name: Install wokwi-cli
       run: |
