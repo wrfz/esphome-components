@@ -13,6 +13,34 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+
+    - name: Prepare full.yaml
+      run: |
+        cp examples/full.yaml .
+        cp .github/workflows/resources/secrets.yaml .
+
+        cp .github/workflows/src/extract_external_components_block.py .
+        cp .github/workflows/src/patch_full_yaml.sh .
+
+        if [ "${{ github.ref }}" == "refs/heads/dev" ]; then 
+          echo "dev branch run, take external components from dev branch"            
+          source patch_full_yaml.sh
+        else 
+          echo "not dev branch run, take external components from main" 
+        fi
+
+        # print path used for external components
+        echo "The following external components will be used for compilation: "
+        python extract_external_components_block.py
+
+    - name: Compile ESPHome binary
+      run: |
+        # compile eshphome
+        esphome compile full.yaml
+
+        # rename file
+        mv .esphome/build/rotex/.pioenvs/rotex/firmware.factory.bin .esphome/build/rotex/.pioenvs/rotex/rotex.factory-gpios-tx05-rx06.bin  
+
     - name: Install wokwi-cli
       run: |
         wget -q -O /usr/local/bin/wokwi-cli https://github.com/wokwi/wokwi-cli/releases/latest/download/wokwi-cli-linuxstatic-x64
