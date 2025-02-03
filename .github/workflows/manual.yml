@@ -17,22 +17,22 @@ jobs:
     - name: Prepare full.yaml
       run: |
         ls -al
-        cp examples/full_de.yaml .
+        cp examples/full_de.yaml ./full.yaml
         cp .github/workflows/resources/secrets.yaml .
 
-        cp .github/workflows/src/extract_external_components_block.py .
-        cp .github/workflows/src/patch_full_yaml.sh .
+        #cp .github/workflows/src/extract_external_components_block.py .
+        #cp .github/workflows/src/patch_full_yaml.sh .
 
-        if [ "${{ github.ref }}" == "refs/heads/dev" ]; then 
-          echo "dev branch run, take external components from dev branch"            
-          source patch_full_yaml.sh
-        else 
-          echo "not dev branch run, take external components from main" 
-        fi
+        #if [ "${{ github.ref }}" == "refs/heads/dev" ]; then 
+        #  echo "dev branch run, take external components from dev branch"            
+        #  source patch_full_yaml.sh
+        #else 
+        #  echo "not dev branch run, take external components from main" 
+        #fi
 
         # print path used for external components
-        echo "The following external components will be used for compilation: "
-        python extract_external_components_block.py
+        #echo "The following external components will be used for compilation: "
+        #python extract_external_components_block.py
 
     - name: Compile ESPHome binary
       run: |
