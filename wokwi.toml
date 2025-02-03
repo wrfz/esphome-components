@@ -1,1 +1,4 @@
 [wokwi]
+version = 1
+elf = ".esphome/build/hpsu-uart/.pioenvs/hpsu-uart/firmware.elf"
+firmware = ".esphome/build/hpsu-uart/.pioenvs/hpsu-uart/firmware.bin"
