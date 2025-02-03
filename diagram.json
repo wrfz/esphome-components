@@ -1,0 +1,19 @@
+{
+    "version": 1,
+    "author": "Uri Shaked",
+    "editor": "wokwi",
+    "parts": [
+      {
+        "type": "board-st-nucleo-c031c6",
+        "id": "nucleo",
+        "top": -37.71,
+        "left": -264.45,
+        "attrs": {}
+      }
+    ],
+    "connections": [
+      [ "$serialMonitor:TX", "nucleo:PA3", "", [] ],
+      [ "$serialMonitor:RX", "nucleo:PA2", "", [] ]
+    ],
+    "dependencies": {}
+  }
