@@ -48,7 +48,7 @@ jobs:
       run: |
         ls -al
         cp examples/full_de.yaml ./full.yaml
-        sed -i 's/^#outdoor_unit/outdoor_unit/' full.yaml
+        sed -i 's/#outdoor_unit: RRLQ006CAV3/outdoor_unit/' full.yaml
 
         cp .github/workflows/resources/secrets.yaml .
 
