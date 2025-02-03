@@ -101,5 +101,5 @@ jobs:
         CI_EXPECT_TEXT: ${{ secrets.CI_EXPECT_TEXT }}
         CI_FAIL_TEXT: ${{ secrets.CI_FAIL_TEXT }}
       run: |
-        wokwi-cli --diagram diagram.json --elf .esphome/build/hpsu-uart/.pioenvs/hpsu-uart/firmware.elf --fail-text "Simulation failed" --timeout 60
+        wokwi-cli --elf .esphome/build/hpsu-uart/.pioenvs/hpsu-uart/firmware.elf --fail-text "Simulation failed" --timeout 60
       shell: bash
