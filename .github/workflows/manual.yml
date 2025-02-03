@@ -28,8 +28,8 @@ jobs:
           --fail-text "$CI_FAIL_TEXT" --scenario "${{ inputs.scenario }}" "${GITHUB_WORKSPACE}/${{ inputs.path }}" \
           --serial-log-file "${{ inputs.serial_log_file }}"
       env:
-        WOKWI_CLI_TOKEN: ${{ inputs.token }}
         FORCE_COLOR: 2  # Enables color output - see https://github.com/chalk/supports-color/issues/106
-        CI_EXPECT_TEXT: ${{ inputs.expect_text }}
-        CI_FAIL_TEXT: ${{ inputs.fail_text }}
+        WOKWI_CLI_TOKEN: ${{ secrets.WOKWI_CLI_TOKEN }}
+        CI_EXPECT_TEXT: ${{ secrets.CI_EXPECT_TEXT }}
+        CI_FAIL_TEXT: ${{ secrets.CI_FAIL_TEXT }}
       shell: bash
