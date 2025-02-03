@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
     - name: Install wokwi-cli
       run: |
         wget -q -O /usr/local/bin/wokwi-cli https://github.com/wokwi/wokwi-cli/releases/latest/download/wokwi-cli-linuxstatic-x64
@@ -27,7 +29,7 @@ jobs:
         echo "CI_EXPECT_TEXT: $CI_EXPECT_TEXT"
         echo "CI_FAIL_TEXT: $CI_FAIL_TEXT"
     - name: List directory contents
-      run: pwd
+      run: ls -al
       shell: bash
     - name: Run CLI
       env:
