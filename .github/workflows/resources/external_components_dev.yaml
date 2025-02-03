@@ -1,0 +1,6 @@
+external_components:   # Use this block instead to use the development branch
+  - source:
+      type: git
+      url: https://github.com/wrfz/esphome-components.git
+      ref: dev
+    refresh: 0s

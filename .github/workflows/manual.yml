@@ -17,7 +17,7 @@ jobs:
     - name: Prepare full.yaml
       run: |
         ls -al
-        cp examples/full.yaml .
+        cp examples/full_de.yaml .
         cp .github/workflows/resources/secrets.yaml .
 
         cp .github/workflows/src/extract_external_components_block.py .
