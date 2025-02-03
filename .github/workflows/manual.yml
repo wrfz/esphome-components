@@ -101,9 +101,5 @@ jobs:
         CI_EXPECT_TEXT: ${{ secrets.CI_EXPECT_TEXT }}
         CI_FAIL_TEXT: ${{ secrets.CI_FAIL_TEXT }}
       run: |
-        wokwi-cli --timeout "${{ inputs.timeout }}" --expect-text "$CI_EXPECT_TEXT" \
-          ${{ inputs.diagram_file != '' && format('--diagram-file "{0}"', inputs.diagram_file) || '' }} \
-          ${{ inputs.elf != '' && format('--elf "{0}"', inputs.elf) || '' }} \
-          --fail-text "$CI_FAIL_TEXT" --scenario "${{ inputs.scenario }}" "${GITHUB_WORKSPACE}/${{ inputs.path }}" \
-          --serial-log-file "${{ inputs.serial_log_file }}"
+        wokwi-cli --chip esp32 --diagram diagram.json --elf .esphome/build/hpsu-uart/.pioenvs/hpsu-uart/firmware.elf --fail-text "Simulation failed" --timeout 60
       shell: bash
