@@ -449,7 +449,7 @@ CONFIG_SCHEMA = cv.Schema(
         cv.GenerateID(): cv.declare_id(DaikinRotexUARTComponent),
         cv.Required(CONF_UART_ID): cv.use_id(UARTComponent),
         cv.Required(CONF_OUTDOR_UNIT): cv.ensure_list(cv.enum(OUTDOOR_UNIT), validate_setoutdoor_unit),
-        cv.Optional(CONF_LANGUAGE, default="de"): cv.enum(SUPPORTED_LANGUAGES, lower=True, space="_"),
+        cv.Required(CONF_LANGUAGE): cv.enum(SUPPORTED_LANGUAGES, lower=True, space="_"),
         cv.Required(CONF_ENTITIES): cv.Schema(
             entity_schemas
         )

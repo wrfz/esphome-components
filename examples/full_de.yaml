@@ -93,6 +93,7 @@ uart:
 daikin_rotex_uart:
   id: rotext_hpsu_uart
   uart_id: uart_bus
+  language: de
   #outdoor_unit: RRLQ006CAV3  #Please comment in your outdoor unit
   #outdoor_unit: RRLQ008CAV3
   #outdoor_unit: RRLQ011CAW1
