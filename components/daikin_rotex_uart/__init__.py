@@ -169,7 +169,7 @@ sensor_configuration = [
         "endian": Endian.LITTLE,
         "divider": 10,
         "device_class": DEVICE_CLASS_PRESSURE,
-        #"unit_of_measurement": UNIT_BAR,
+        "unit_of_measurement": UNIT_PRESSURE_BAR,
         "accuracy_decimals": 1,
         "state_class": STATE_CLASS_MEASUREMENT
     },
