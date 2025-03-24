@@ -2,6 +2,7 @@
 
 #include "esphome/components/daikin_rotex_uart/MessageManager.h"
 #include "esphome/components/daikin_rotex_uart/entity.h"
+#include "esphome/components/text_sensor/text_sensor.h"
 #include "esphome/components/uart/uart.h"
 #include "esphome/core/component.h"
 #include <list>
@@ -24,6 +25,7 @@ class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
     void setup() override;
     void loop() override;
 
+    void set_project_git_hash(text_sensor::TextSensor* pSensor, std::string const& hash);
     void add_entity(EntityBase* pEntityBase);
 
     void call_later(TVoidFunc lambda, uint32_t timeout = 0u) {
@@ -34,7 +36,14 @@ class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
 private:
     TMessageManager m_message_manager;
     std::list<std::pair<TVoidFunc, uint32_t>> m_later_calls;
+    text_sensor::TextSensor* m_project_git_hash_sensor;
+    std::string m_project_git_hash;
 };
+
+inline void DaikinRotexUARTComponent::set_project_git_hash(text_sensor::TextSensor* pSensor, std::string const& hash) {
+    m_project_git_hash_sensor = pSensor;
+    m_project_git_hash = hash;
+}
 
 } // namespace daikin_rotex_uart
 } // namespace esphome

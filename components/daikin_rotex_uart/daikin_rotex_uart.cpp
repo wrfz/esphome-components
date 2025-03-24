@@ -13,6 +13,10 @@ namespace daikin_rotex_uart {
 static const char* TAG = "daikin_rotex_uart";
 
 DaikinRotexUARTComponent::DaikinRotexUARTComponent()
+: m_message_manager()
+, m_later_calls()
+, m_project_git_hash_sensor(nullptr)
+, m_project_git_hash()
 {
 }
 
@@ -23,6 +27,7 @@ void DaikinRotexUARTComponent::add_entity(EntityBase* pEntityBase) {
 }
 
 void DaikinRotexUARTComponent::setup() {
+    m_project_git_hash_sensor->publish_state(m_project_git_hash);
 }
 
 void DaikinRotexUARTComponent::loop() {

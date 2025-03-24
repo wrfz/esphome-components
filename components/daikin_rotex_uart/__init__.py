@@ -15,7 +15,9 @@ from .translations.translate import (
 )
 
 from enum import Enum
+import subprocess
 import logging
+import os
 
 CODEOWNERS = ["@wrfz"]
 AUTO_LOAD = ["binary_sensor", "sensor", "text_sensor"]
@@ -37,6 +39,10 @@ UartBinarySensor = daikin_rotex_uart_ns.class_("UartBinarySensor", binary_sensor
 
 EndianLittle = daikin_rotex_uart_ns.enum('TEntity::Endian::Little')
 EndianBig = daikin_rotex_uart_ns.enum('TEntity::Endian::Big')
+
+result = subprocess.run(['git', 'rev-parse', '--short', 'HEAD'], stdout=subprocess.PIPE, text=True, cwd=os.path.dirname(os.path.realpath(__file__)))
+git_hash = result.stdout.strip()
+_LOGGER.info("Project Git Hash %s", git_hash)
 
 class Endian(Enum):
     LITTLE = 1
@@ -412,6 +418,7 @@ def validate_setoutdoor_unit(value):
 
 CONF_ENTITIES = "entities"
 CONF_OUTDOR_UNIT = "outdoor_unit"
+CONF_PROJECT_GIT_HASH = "project_git_hash"
 
 entity_schemas = {}
 for sensor_conf in sensor_configuration:
@@ -450,6 +457,10 @@ CONFIG_SCHEMA = cv.Schema(
         cv.Required(CONF_UART_ID): cv.use_id(UARTComponent),
         cv.Required(CONF_OUTDOR_UNIT): cv.ensure_list(cv.enum(OUTDOOR_UNIT), validate_setoutdoor_unit),
         cv.Required(CONF_LANGUAGE): cv.enum(SUPPORTED_LANGUAGES, lower=True, space="_"),
+        cv.Required(CONF_PROJECT_GIT_HASH): text_sensor.text_sensor_schema(
+            icon="mdi:git",
+            entity_category=ENTITY_CATEGORY_DIAGNOSTIC
+        ),
         cv.Required(CONF_ENTITIES): cv.Schema(
             entity_schemas
         )
@@ -478,6 +489,10 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
+
+    if text_conf := config.get(CONF_PROJECT_GIT_HASH):
+        t = await text_sensor.new_text_sensor(text_conf)
+        cg.add(var.set_project_git_hash(t, git_hash))
 
     if entities := config.get(CONF_ENTITIES):
         for sens_conf in sensor_configuration:

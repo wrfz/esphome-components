@@ -101,6 +101,8 @@ daikin_rotex_uart:
   #outdoor_unit: ERGA06EAV3
   #outdoor_unit: ERGA08DAV3
   #outdoor_unit: RRGA08DAV3
+  project_git_hash:
+    name: Project Git Hash
   entities:
     mode_of_operating:
       name: Betriebsart (UART)
