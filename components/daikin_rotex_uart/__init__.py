@@ -429,25 +429,25 @@ for sensor_conf in sensor_configuration:
             entity_schemas.update({
                 cv.Optional(name): sensor.sensor_schema(
                     UartSensor,
-                    device_class=(sensor_conf.get("device_class", sensor._UNDEF)),
-                    unit_of_measurement=(sensor_conf.get("unit_of_measurement", sensor._UNDEF)),
-                    accuracy_decimals=(sensor_conf.get("accuracy_decimals", sensor._UNDEF)),
-                    state_class=(sensor_conf.get("state_class", sensor._UNDEF)),
-                    icon=(sensor_conf.get("icon", sensor._UNDEF))
+                    device_class=(sensor_conf.get("device_class", cv.UNDEFINED)),
+                    unit_of_measurement=(sensor_conf.get("unit_of_measurement", cv.UNDEFINED)),
+                    accuracy_decimals=(sensor_conf.get("accuracy_decimals", cv.UNDEFINED)),
+                    state_class=(sensor_conf.get("state_class", cv.UNDEFINED)),
+                    icon=(sensor_conf.get("icon", cv.UNDEFINED))
                 ),
             })
         case "binary_sensor":
             entity_schemas.update({
                 cv.Optional(name): binary_sensor.binary_sensor_schema(
                     UartBinarySensor,
-                    icon=sensor_conf.get("icon", binary_sensor._UNDEF)
+                    icon=sensor_conf.get("icon", cv.UNDEFINED)
                 )
             })
         case "text_sensor":
             entity_schemas.update({
                 cv.Optional(name): text_sensor.text_sensor_schema(
                     UartTextSensor,
-                    icon=sensor_conf.get("icon", text_sensor._UNDEF)
+                    icon=sensor_conf.get("icon", cv.UNDEFINED)
                 )
             })
 
