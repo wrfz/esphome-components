@@ -42,7 +42,7 @@ void TMessageManager::handleResponse(uart::UARTDevice& device) {
     std::string log_message = m_buffer.read(device);
 
     if (m_buffer.size() >= 2 && m_buffer[0] == 0x15 && m_buffer[1] == 0xEA) {
-        //ESP_LOGI(TAG, "RX: Invalid request => data: %s", Utils::to_hex(m_buffer.data(), 2).c_str());
+        ESP_LOGW(TAG, "RX: Invalid request => data: %s", Utils::to_hex(m_buffer.data(), 2).c_str());
         m_buffer.shift(2);
         return;
     }
@@ -77,10 +77,10 @@ void TMessageManager::handleResponse(uart::UARTDevice& device) {
             ESP_LOGI(TAG, "RX: %s", log_message.c_str());
             return;
         }
-        ESP_LOGE(TAG, "RX: incomplete buffer: %s", log_message.c_str());
+        ESP_LOGW(TAG, "RX: incomplete buffer: %s", log_message.c_str());
         return;
     }
-    ESP_LOGE(TAG, "RX: incomplete header: %s", log_message.c_str());
+    ESP_LOGW(TAG, "RX: incomplete header: %s", log_message.c_str());
 }
 
 std::shared_ptr<TRequest> TMessageManager::getNextRequestToSend() {

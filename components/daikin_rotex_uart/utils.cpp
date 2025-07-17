@@ -1,4 +1,5 @@
 #include "esphome/components/daikin_rotex_uart/utils.h"
+#include <array>
 #include <regex>
 
 namespace esphome {

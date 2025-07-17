@@ -1,6 +1,8 @@
 #include "esphome/components/daikin_rotex_uart/BidiMap.h"
 #include "esphome/core/log.h"
 
+#include <limits>
+
 namespace esphome {
 namespace daikin_rotex_uart {
 

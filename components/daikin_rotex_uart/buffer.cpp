@@ -13,7 +13,7 @@ TBuffer::TBuffer()
 }
 
 std::string TBuffer::read(uart::UARTDevice& device) {
-    const auto to_read = std::min(static_cast<uint32_t>(device.available()), m_buffer.size() - m_size);
+    const auto to_read = std::min(static_cast<size_t>(device.available()), m_buffer.size() - m_size);
     uint8_t* data = m_buffer.data() + m_size;
     if (device.read_array(data, to_read)) {
         m_size += to_read;

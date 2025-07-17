@@ -9,7 +9,7 @@ class TBuffer {
 public:
     TBuffer();
     std::string read(uart::UARTDevice& device);
-    uint8_t size() const;
+    size_t size() const;
     const BufferType& data() const;
     BufferType& data();
     uint8_t& operator[](uint8_t offset);
@@ -17,10 +17,10 @@ public:
     void clear();
 private:
     BufferType m_buffer;
-    uint8_t m_size;
+    size_t m_size;
 };
 
-inline uint8_t TBuffer::size() const {
+inline size_t TBuffer::size() const {
     return m_size;
 }
 
