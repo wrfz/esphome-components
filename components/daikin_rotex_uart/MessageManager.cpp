@@ -77,10 +77,10 @@ void TMessageManager::handleResponse(uart::UARTDevice& device) {
             ESP_LOGI(TAG, "RX: %s", log_message.c_str());
             return;
         }
-        ESP_LOGW(TAG, "RX: incomplete buffer: %s", log_message.c_str());
+        ESP_LOGI(TAG, "RX: incomplete buffer: %s", log_message.c_str());
         return;
     }
-    ESP_LOGW(TAG, "RX: incomplete header: %s", log_message.c_str());
+    ESP_LOGI(TAG, "RX: incomplete header: %s", log_message.c_str());
 }
 
 std::shared_ptr<TRequest> TMessageManager::getNextRequestToSend() {
