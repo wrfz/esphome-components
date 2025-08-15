@@ -273,9 +273,8 @@ sensor_configuration = [
         "offset": 3,
         "signed": False,
         "dataSize": 2,
-        "divider": 500.0 / 100.0, # 500pls = 100%
         "endian": Endian.LITTLE,
-        "unit_of_measurement": UNIT_PERCENT,
+        "unit_of_measurement": "pls",
         "state_class": STATE_CLASS_MEASUREMENT,
         "icon": "mdi:pipe-valve"
     },
