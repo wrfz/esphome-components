@@ -10,7 +10,7 @@ static const char* TAG = "Utils";
 template<std::size_t Size>
 std::string Utils::to_hex(std::array<uint8_t, Size> const& data, std::size_t maxlen) {
     std::ostringstream oss;
-    size_t length = std::min(maxlen, data.size());
+    const size_t length = std::min(maxlen, data.size());
 
     for (size_t i = 0; i < length; ++i) {
         oss << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << static_cast<int>(data[i]);
@@ -24,11 +24,10 @@ std::string Utils::to_hex(std::array<uint8_t, Size> const& data, std::size_t max
 
 std::string Utils::to_hex(uint8_t const* data, std::size_t maxlen) {
     std::ostringstream oss;
-    size_t length = maxlen;
 
-    for (size_t i = 0; i < length; ++i) {
+    for (size_t i = 0; i < maxlen; ++i) {
         oss << std::hex << std::uppercase << std::setw(2) << std::setfill('0') << static_cast<int>(data[i]);
-        if (i != length - 1) {
+        if (i != maxlen - 1) {
             oss << " ";
         }
     }
@@ -48,12 +47,12 @@ std::map<uint16_t, std::string> Utils::str_to_map(const std::string& input) {
     std::string pair;
 
     while (std::getline(ss, pair, '|')) {
-        size_t pos = pair.find(':');
+        const size_t pos = pair.find(':');
         if (pos != std::string::npos) {
-            std::string keyStr = pair.substr(0, pos);
-            std::string value = pair.substr(pos + 1);
+            const std::string keyStr = pair.substr(0, pos);
+            const std::string value = pair.substr(pos + 1);
 
-            uint16_t key = static_cast<uint16_t>(std::strtoul(keyStr.c_str(), nullptr, 16));
+            const uint16_t key = static_cast<uint16_t>(std::strtoul(keyStr.c_str(), nullptr, 16));
 
             result[key] = value;
         }

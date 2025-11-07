@@ -151,10 +151,10 @@ double UnitConverter::liquid_pressure_to_temperature(double pressureBar) {
 
     for (size_t i = 1; i < table.size(); ++i) {
         if (pressureBar <= table[i].second) {
-            double x1 = table[i - 1].second;
-            double y1 = table[i - 1].first;
-            double x2 = table[i].second;
-            double y2 = table[i].first;
+            const double x1 = table[i - 1].second;
+            const double y1 = table[i - 1].first;
+            const double x2 = table[i].second;
+            const double y2 = table[i].first;
 
             return (y1 + (pressureBar - x1) * (y2 - y1) / (x2 - x1)) * divider;
         }
