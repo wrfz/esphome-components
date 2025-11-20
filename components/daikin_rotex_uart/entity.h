@@ -92,10 +92,6 @@ public:
         return m_config.pEntity != nullptr ? m_config.pEntity->get_name().str() : "<INVALID>";
     }
 
-    EntityBase* get_entity_base() const {
-        return m_config.pEntity;
-    }
-
     uint8_t getRegistryID() const {
         return m_config.registryID;
     }
@@ -126,4 +122,3 @@ private:
 
 }
 }
-

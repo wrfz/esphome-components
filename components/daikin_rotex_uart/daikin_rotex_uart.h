@@ -1,7 +1,7 @@
 #pragma once
 
 #include "esphome/components/daikin_rotex_uart/MessageManager.h"
-#include "esphome/components/daikin_rotex_uart/entity.h"
+#include "esphome/components/daikin_rotex_uart/sensors.h"
 #include "esphome/components/text_sensor/text_sensor.h"
 #include "esphome/components/uart/uart.h"
 #include "esphome/core/component.h"
@@ -26,7 +26,9 @@ class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
     void loop() override;
 
     void set_project_git_hash(text_sensor::TextSensor* pSensor, std::string const& hash);
-    void add_entity(EntityBase* pEntityBase);
+    void add_entity(UartSensor* pEntity);
+    void add_entity(UartBinarySensor* pEntity);
+    void add_entity(UartTextSensor* pEntity);
 
     void call_later(TVoidFunc lambda, uint32_t timeout = 0u) {
         const uint32_t timestamp = millis();

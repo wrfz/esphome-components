@@ -20,10 +20,16 @@ DaikinRotexUARTComponent::DaikinRotexUARTComponent()
 {
 }
 
-void DaikinRotexUARTComponent::add_entity(EntityBase* pEntityBase) {
-    if (TEntity* pEntity = dynamic_cast<TEntity*>(pEntityBase)) {
-        m_message_manager.add(pEntity);
-    }
+void DaikinRotexUARTComponent::add_entity(UartSensor* pEntity) {
+    m_message_manager.add(pEntity);
+}
+
+void DaikinRotexUARTComponent::add_entity(UartBinarySensor* pEntity) {
+    m_message_manager.add(pEntity);
+}
+
+void DaikinRotexUARTComponent::add_entity(UartTextSensor* pEntity) {
+    m_message_manager.add(pEntity);
 }
 
 void DaikinRotexUARTComponent::setup() {

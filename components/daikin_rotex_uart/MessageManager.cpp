@@ -130,7 +130,7 @@ void TMessageManager::dumpRequests() {
             first = false;
         }
     }
-    ESP_LOGI(TAG, "%s", dump.c_str());
+    ESP_LOGI(TAG, "count: %d, %s", m_messages.size(), dump.c_str());
 }
 
 } // namespace daikin_rotex_uart
