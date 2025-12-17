@@ -16,11 +16,7 @@ BootLogger::BootLogger(std::uint32_t heap_limit, std::uint32_t dump_lines_per_lo
 void BootLogger::setup() {
     ESP_LOGI(TAG, "setup");
     if (logger::global_logger != nullptr) {
-        logger::global_logger->add_on_log_callback([this](uint8_t level, const char* tag, const char* message, size_t size) {
-            if (m_state == State::BUFFERING) {
-                m_items.emplace_back(LogItem{level, std::string(tag), std::string(message)});
-            }
-        });
+        logger::global_logger->add_log_listener(this);
     }
     m_setup_ts = esphome::millis();
 }
@@ -44,6 +40,12 @@ void BootLogger::loop() {
 
     if (m_state == State::DUMPING) {
         dumping();
+    }
+}
+
+void BootLogger::on_log(uint8_t level, const char *tag, const char *message, size_t message_len) {
+    if (m_state == State::BUFFERING) {
+        m_items.emplace_back(LogItem{level, std::string(tag), std::string(message)});
     }
 }
 

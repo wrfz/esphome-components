@@ -1,12 +1,13 @@
 #pragma once
 
 #include "esphome/core/component.h"
+#include "esphome/components/logger/logger.h"
 #include <list>
 
 namespace esphome {
 namespace boot_logger {
 
-class BootLogger : public Component {
+class BootLogger : public Component, public logger::LogListener {
    struct LogItem {
       int level;
       std::string tag;
@@ -29,6 +30,8 @@ public:
 
    void setup() override;
    void loop() override;
+
+   void on_log(uint8_t level, const char *tag, const char *message, size_t message_len) override;
 
 private:
 
