@@ -11,6 +11,8 @@ namespace esphome {
 namespace daikin_rotex_uart {
 
 static const char* TAG = "daikin_rotex_uart";
+static const std::string TA2 = "outdoor_temp";
+static const std::string EXCHANGER_TEMP = "exch_temp";
 
 DaikinRotexUARTComponent::DaikinRotexUARTComponent()
 : m_message_manager()
@@ -21,19 +23,29 @@ DaikinRotexUARTComponent::DaikinRotexUARTComponent()
 }
 
 void DaikinRotexUARTComponent::add_entity(UartSensor* pEntity) {
-    m_message_manager.add(pEntity);
+    add_base_entity(pEntity);
 }
 
 void DaikinRotexUARTComponent::add_entity(UartBinarySensor* pEntity) {
-    m_message_manager.add(pEntity);
+    add_base_entity(pEntity);
 }
 
 void DaikinRotexUARTComponent::add_entity(UartTextSensor* pEntity) {
+    add_base_entity(pEntity);
+}
+
+void DaikinRotexUARTComponent::add_base_entity(TEntity* pEntity) {
     m_message_manager.add(pEntity);
+    pEntity->set_post_handle([this](TEntity* pEntity, TEntity::TVariant const& current, TEntity::TVariant const& previous){
+        on_post_handle(pEntity, current, previous);
+    });
 }
 
 void DaikinRotexUARTComponent::setup() {
     m_project_git_hash_sensor->publish_state(m_project_git_hash);
+}
+
+void DaikinRotexUARTComponent::on_post_handle(TEntity* pEntity, TEntity::TVariant const& current, TEntity::TVariant const& previous) {
 }
 
 void DaikinRotexUARTComponent::loop() {

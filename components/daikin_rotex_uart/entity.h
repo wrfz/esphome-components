@@ -19,6 +19,7 @@ public:
 
     using THandleFunc = std::function<uint16_t(uint8_t*)>;
     using TVariant = std::variant<double, bool, std::string>;
+    using TPostHandleLabda = std::function<void(TEntity*, TEntity::TVariant const&, TEntity::TVariant const&)>;
 
     struct TEntityArguments {
         EntityBase* pEntity;
@@ -75,10 +76,7 @@ public:
     };
 
 public:
-    TEntity()
-    : m_pRequest(nullptr)
-    {
-    }
+    TEntity();
 
     void setRequest(std::shared_ptr<TRequest> pRequest) {
         m_pRequest = pRequest;
@@ -90,6 +88,10 @@ public:
 
     std::string getName() const {
         return m_config.pEntity != nullptr ? m_config.pEntity->get_name().str() : "<INVALID>";
+    }
+
+    std::string getId() const {
+        return m_config.name;
     }
 
     uint8_t getRegistryID() const {
@@ -110,14 +112,19 @@ public:
         m_config = std::move(arg);
     }
 
+    void set_post_handle(TPostHandleLabda&& func) {
+        m_post_handle_lambda = std::move(func);
+    }
+
 protected:
-    virtual bool handleValue(uint16_t value, TVariant& current) = 0;
+    virtual bool handleValue(uint16_t value, TVariant& current, TVariant& previous) = 0;
 
 protected:
     TEntityArguments m_config;
 
 private:
     std::shared_ptr<TRequest> m_pRequest;
+    TPostHandleLabda m_post_handle_lambda;
 };
 
 }

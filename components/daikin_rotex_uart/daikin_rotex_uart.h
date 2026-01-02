@@ -36,6 +36,10 @@ class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
     }
 
 private:
+    void add_base_entity(TEntity* pEntity);
+
+    void on_post_handle(TEntity* pEntity, TEntity::TVariant const& current, TEntity::TVariant const& previous);
+
     TMessageManager m_message_manager;
     std::list<std::pair<TVoidFunc, uint32_t>> m_later_calls;
     text_sensor::TextSensor* m_project_git_hash_sensor;

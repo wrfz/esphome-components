@@ -1,6 +1,6 @@
 #pragma once
 
-#include "esphome/components/daikin_rotex_uart/entity.h"
+#include "esphome/components/daikin_rotex_uart/sensors.h"
 #include "esphome/components/daikin_rotex_uart/buffer.h"
 #include <vector>
 
@@ -14,6 +14,12 @@ public:
     void add(TEntity* pEntity);
     bool sendNextRequest(uart::UARTDevice&);
     void handleResponse(uart::UARTDevice&);
+
+    UartSensor* get_sensor(std::string const& id);
+    UartSensor const* get_sensor(std::string const& id) const;
+
+    const TEntity* getEntityById(const std::string& name) const;
+    TEntity* getEntityById(const std::string& name);
 private:
     void dumpRequests();
     std::shared_ptr<TRequest> getNextRequestToSend();

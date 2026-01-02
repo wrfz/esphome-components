@@ -30,6 +30,43 @@ void TMessageManager::add(TEntity* pEntity) {
     m_messages.push_back(pEntity);
 }
 
+const TEntity* TMessageManager::getEntityById(const std::string& id) const {
+    for (auto pEntity : m_messages) {
+        if (pEntity->getId() == id) {
+            return pEntity;
+        }
+    }
+    return nullptr;
+}
+
+TEntity* TMessageManager::getEntityById(const std::string& id) {
+    return const_cast<TEntity*>(static_cast<const TMessageManager*>(this)->getEntityById(id));
+}
+
+UartSensor* TMessageManager::get_sensor(std::string const& id) {
+    TEntity* pEntity = getEntityById(id);
+    if (UartSensor* pSensor = dynamic_cast<UartSensor*>(pEntity)) {
+        return pSensor;
+    } else if (pEntity) {
+        ESP_LOGE(TAG, "Entity is not a sensor: %s", pEntity->getId().c_str());
+    } else {
+        ESP_LOGE(TAG, "Entity not found: %s", id.c_str());
+    }
+    return nullptr;
+}
+
+UartSensor const* TMessageManager::get_sensor(std::string const& id) const {
+    TEntity const* pEntity = getEntityById(id);
+    if (UartSensor const* pSensor = dynamic_cast<UartSensor const*>(pEntity)) {
+        return pSensor;
+    } else if (pEntity) {
+        ESP_LOGE(TAG, "Const Entity is not a sensor: %s", pEntity->getId().c_str());
+    } else {
+        ESP_LOGE(TAG, "Const Entity not found: %s", id.c_str());
+    }
+    return nullptr;
+}
+
 bool TMessageManager::sendNextRequest(uart::UARTDevice& device) {
     std::shared_ptr<TRequest> pRequest = getNextRequestToSend();
     if (pRequest != nullptr) {

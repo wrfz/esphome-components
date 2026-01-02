@@ -12,6 +12,12 @@ namespace daikin_rotex_uart {
 
 static const char* TAG = "daikin_rotex_uart";
 
+TEntity::TEntity()
+: m_pRequest(nullptr)
+, m_post_handle_lambda()
+{
+}
+
 std::string TEntity::convert(uint8_t* data) {
     uint16_t value = 0u;
     if (m_config.handle_lambda_set)
@@ -34,10 +40,15 @@ std::string TEntity::convert(uint8_t* data) {
         }
     }
 
-    TEntity::TVariant current;
-    const bool value_valid = handleValue(value, current);
+    TEntity::TVariant current, previous;
+    const bool valid = handleValue(value, current, previous);
 
-    if (value_valid) {
+    if (valid) {
+        const bool changed = current != previous;
+        if (changed) {
+            m_post_handle_lambda(this, current, previous);
+        }
+
         std::string value;
         if (std::holds_alternative<double>(current)) {
             value = Utils::format("%.*f", m_config.accuracy_decimals, std::get<double>(current));

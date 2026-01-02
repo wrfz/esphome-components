@@ -8,7 +8,7 @@ static const char* TAG = "daikin_rotex_uart";
 
 /////////////////////// UartSensor ///////////////////////
 
-bool UartSensor::handleValue(uint16_t value, TEntity::TVariant& current) {
+bool UartSensor::handleValue(uint16_t value, TEntity::TVariant& current, TVariant& previous) {
     if (m_config.isSigned) {
         current = static_cast<int16_t>(value) / m_config.divider;
     } else {
@@ -29,7 +29,7 @@ bool UartSensor::handleValue(uint16_t value, TEntity::TVariant& current) {
 
 /////////////////////// UartTextSensor ///////////////////////
 
-bool UartTextSensor::handleValue(uint16_t value, TEntity::TVariant& current) {
+bool UartTextSensor::handleValue(uint16_t value, TEntity::TVariant& current, TVariant& previous) {
     const auto it = m_map.findByKey(value);
     current = it != m_map.end() ? it->second : Utils::format("INVALID<%d>", value);
     publish_state(std::get<std::string>(current));
@@ -38,7 +38,7 @@ bool UartTextSensor::handleValue(uint16_t value, TEntity::TVariant& current) {
 
 /////////////////////// UartBinarySensor ///////////////////////
 
-bool UartBinarySensor::handleValue(uint16_t value, TEntity::TVariant& current) {
+bool UartBinarySensor::handleValue(uint16_t value, TEntity::TVariant& current, TVariant& previous) {
     current = value > 0;
     publish_state(std::get<bool>(current));
     return true;

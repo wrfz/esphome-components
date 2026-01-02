@@ -24,7 +24,7 @@ public:
     UartSensor() = default;
     void set_range(Range const& range) { m_range = range; }
 protected:
-    virtual bool handleValue(uint16_t value, TVariant& current) override;
+    virtual bool handleValue(uint16_t value, TVariant& current, TVariant& previous) override;
 private:
     Range m_range;
     uint32_t trys;
@@ -37,7 +37,7 @@ public:
     UartTextSensor() = default;
     void set_map(std::string const& str_map) { m_map = Utils::str_to_map(str_map); }
 protected:
-    virtual bool handleValue(uint16_t value, TVariant& current) override;
+    virtual bool handleValue(uint16_t value, TVariant& current, TVariant& previous) override;
 private:
     BidiMap m_map;
 };
@@ -49,7 +49,7 @@ public:
     UartBinarySensor() = default;
 
 protected:
-    virtual bool handleValue(uint16_t value, TVariant& current) override;
+    virtual bool handleValue(uint16_t value, TVariant& current, TVariant& previous) override;
 };
 
 }  // namespace ld2410
