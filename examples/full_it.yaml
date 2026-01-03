@@ -125,11 +125,11 @@ daikin_rotex_uart:
     dhw_temp:
       name: Temperatura serbatoio ACS
     tv:
-      name: Temperatura di mandata (TV)
+      name: TV
     tv_bh:
-      name: Temperatura di mandata (TVBH)
+      name: TVBH
     tr:
-      name: Temperatura di ritorno
+      name: TR
     outdoor_temp:
       name: Temperatura aria esterna
     tgt_cond_temp:

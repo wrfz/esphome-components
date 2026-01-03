@@ -125,11 +125,11 @@ daikin_rotex_uart:
     dhw_temp:
       name: DHW tank temp
     tv:
-      name: Vorlauftemeratur (TV)
+      name: TV
     tv_bh:
-      name: Vorlauftemeratur (TVBH)
+      name: TVBH
     tr:
-      name: Rücklauftemperatur
+      name: TR
     outdoor_temp:
       name: Outdoor Air Temp
     tgt_cond_temp:
