@@ -353,7 +353,7 @@ sensor_configuration = [
         "unit_of_measurement": UNIT_CELSIUS,
         "accuracy_decimals": 1,
         "state_class": STATE_CLASS_MEASUREMENT,
-        "update_entities": ["thermal_power"],
+        "update_entities": ["thermal_power", "temperature_spread"],
     },
     {
         "type": "sensor",
@@ -396,7 +396,7 @@ sensor_configuration = [
         "unit_of_measurement": UNIT_CELSIUS,
         "accuracy_decimals": 1,
         "state_class": STATE_CLASS_MEASUREMENT,
-        "update_entities": ["thermal_power"],
+        "update_entities": ["thermal_power", "temperature_spread"],
     },
     {
         "type": "sensor",
@@ -408,7 +408,7 @@ sensor_configuration = [
         "endian": Endian.LITTLE,
         "divider": 10,
         "device_class": DEVICE_CLASS_TEMPERATURE,
-        "unit_of_measurement": UNIT_LITER_PER_HOUR,
+        "unit_of_measurement": UNIT_CELSIUS,
         "accuracy_decimals": 1,
         "state_class": STATE_CLASS_MEASUREMENT
     },
@@ -443,6 +443,8 @@ CONF_PROJECT_GIT_HASH = "project_git_hash"
 
 CONF_THERMAL_POWER = "thermal_power"
 CONF_THERMAL_POWER_RAW = "thermal_power_raw"
+CONF_TEMPERATURE_SPREAD = "temperature_spread"
+CONF_TEMPERATURE_SPREAD_RAW = "temperature_spread_raw"
 
 
 entity_schemas = {}
@@ -492,6 +494,22 @@ entity_schemas.update({
         unit_of_measurement=UNIT_KILOWATT,
         accuracy_decimals=2,
         state_class=STATE_CLASS_MEASUREMENT
+    ).extend(),
+    cv.Optional(CONF_TEMPERATURE_SPREAD): sensor.sensor_schema(
+        UartSensor,
+        device_class=DEVICE_CLASS_TEMPERATURE,
+        unit_of_measurement=UNIT_CELSIUS,
+        accuracy_decimals=1,
+        state_class=STATE_CLASS_MEASUREMENT,
+        icon="mdi:thermometer-lines"
+    ).extend(),
+    cv.Optional(CONF_TEMPERATURE_SPREAD_RAW): sensor.sensor_schema(
+        UartSensor,
+        device_class=DEVICE_CLASS_TEMPERATURE,
+        unit_of_measurement=UNIT_CELSIUS,
+        accuracy_decimals=1,
+        state_class=STATE_CLASS_MEASUREMENT,
+        icon="mdi:thermometer-lines"
     ).extend(),
 })
 
@@ -596,3 +614,12 @@ async def to_code(config):
             sens = await sensor.new_sensor(yaml_sensor_conf)
             cg.add(sens.set_id(CONF_THERMAL_POWER_RAW))
             cg.add(var.set_thermal_power_sensor_raw(sens))
+        if yaml_sensor_conf := entities.get(CONF_TEMPERATURE_SPREAD):
+            sens = await sensor.new_sensor(yaml_sensor_conf)
+            cg.add(sens.set_id(CONF_TEMPERATURE_SPREAD))
+            cg.add(var.set_temperature_spread(sens))
+        if yaml_sensor_conf := entities.get(CONF_TEMPERATURE_SPREAD_RAW):
+            sens = await sensor.new_sensor(yaml_sensor_conf)
+            cg.add(sens.set_id(CONF_TEMPERATURE_SPREAD_RAW))
+            cg.add(var.set_temperature_spread_raw(sens))
+

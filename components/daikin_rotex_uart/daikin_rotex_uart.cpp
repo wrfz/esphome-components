@@ -22,8 +22,11 @@ DaikinRotexUARTComponent::DaikinRotexUARTComponent()
 , m_project_git_hash_sensor(nullptr)
 , m_thermal_power_sensor(new UartSensor("thermal_power")) // Create dummy sensors to avoid nullptr without HA api communicaction. Can be overwritten by the user.
 , m_thermal_power_raw_sensor(new UartSensor("thermal_power_raw"))
+, m_temperature_spread_sensor(new UartSensor("temperature_spread")) // Used to detect valve malfunctions, even if the sensor has not been defined by the user.
+, m_temperature_spread_raw_sensor(new UartSensor("temperature_spread_raw"))
 , m_project_git_hash()
 {
+    m_temperature_spread_sensor->set_smooth(true);
 }
 
 void DaikinRotexUARTComponent::add_entity(UartSensor* pEntity) {
@@ -76,12 +79,14 @@ void DaikinRotexUARTComponent::loop() {
         pEntity->update(millis);
     }
     m_thermal_power_sensor->update(millis);
-    //m_temperature_spread_sensor->update(millis);
+    m_temperature_spread_sensor->update(millis);
 }
 
 void DaikinRotexUARTComponent::updateState(std::string const& id) {
     if (id == "thermal_power") {
         update_thermal_power();
+    } else if (id == "temperature_spread") {
+        update_temperature_spread();
     }
 }
 
@@ -112,6 +117,21 @@ void DaikinRotexUARTComponent::update_thermal_power() {
     m_thermal_power_raw_sensor->publish(thermal_power_raw);
     m_thermal_power_sensor->publish(thermal_power_raw);
 }
+
+void DaikinRotexUARTComponent::update_temperature_spread() {
+    UartSensor const* tv = m_message_manager.get_sensor("tv");
+    UartSensor const* tr = m_message_manager.get_sensor("tr");
+
+    if (tv != nullptr && tr != nullptr) {
+        const float temperature_spread = tv->state - tr->state;
+
+        ESP_LOGI(TAG, "update_temperature_spread() tv: %f, tr: %f", tv->state, tr->state);
+
+        m_temperature_spread_sensor->publish(temperature_spread);
+        m_temperature_spread_raw_sensor->publish(temperature_spread);
+    }
+}
+
 
 } // namespace daikin_rotex_uart
 } // namespace esphome

@@ -28,6 +28,8 @@ class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
     void set_project_git_hash(text_sensor::TextSensor* pSensor, std::string const& hash);
     void set_thermal_power_sensor(UartSensor* pSensor);
     void set_thermal_power_sensor_raw(UartSensor* pSensor);
+    void set_temperature_spread(UartSensor* pSensor);
+    void set_temperature_spread_raw(UartSensor* pSensor);
 
     void add_entity(UartSensor* pEntity);
     void add_entity(UartBinarySensor* pEntity);
@@ -39,14 +41,18 @@ private:
     void on_post_handle(TEntity* pEntity, TEntity::TVariant const& current, TEntity::TVariant const& previous);
 
     void updateState(std::string const& id);
+
     void update_thermal_power();
+    void update_temperature_spread();
 
     TMessageManager m_message_manager;
     text_sensor::TextSensor* m_project_git_hash_sensor;
 
     UartSensor* m_thermal_power_sensor;
     UartSensor* m_thermal_power_raw_sensor;
-    
+    UartSensor* m_temperature_spread_sensor;
+    UartSensor* m_temperature_spread_raw_sensor;
+
     std::string m_project_git_hash;
 };
 
@@ -62,6 +68,16 @@ inline void DaikinRotexUARTComponent::set_thermal_power_sensor(UartSensor* pSens
 
 inline void DaikinRotexUARTComponent::set_thermal_power_sensor_raw(UartSensor* pSensor) {
     m_thermal_power_raw_sensor = pSensor;
+}
+
+inline void DaikinRotexUARTComponent::set_temperature_spread(UartSensor* pSensor) {
+    m_temperature_spread_sensor = pSensor;
+    pSensor->set_smooth(true);
+    //pSensor->set_logging(true);
+}
+
+inline void DaikinRotexUARTComponent::set_temperature_spread_raw(UartSensor* pSensor) {
+    m_temperature_spread_raw_sensor = pSensor;
 }
 
 } // namespace daikin_rotex_uart
