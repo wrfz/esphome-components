@@ -147,6 +147,11 @@ daikin_rotex_uart:
     defrost_operation:
       name: Abtauvorgang
 
+    temperature_spread:
+      name: Spreizung
+    temperature_spread_raw:
+      name: Spreizung Raw
+
     thermal_power:
       name: Thermische Leistung
     thermal_power_raw:

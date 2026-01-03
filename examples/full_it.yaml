@@ -147,6 +147,11 @@ daikin_rotex_uart:
     defrost_operation:
       name: Sbrinamento
 
+    temperature_spread:
+      name: Delta Temperatura
+    temperature_spread_raw:
+      name: Delta Temperatura Raw
+
     thermal_power:
       name: Potenza Termica
     thermal_power_raw:
