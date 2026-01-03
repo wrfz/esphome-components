@@ -50,6 +50,7 @@ class Endian(Enum):
 
 UNIT_REVOLUTIONS_PER_SECOND = "rps"
 UNIT_PRESSURE_BAR = "bar"
+UNIT_LITER_PER_HOUR = "L/h"
 
 RRLQ004CAV3 = "RRLQ004CAV3"
 RRLQ006CAV3 = "RRLQ006CAV3"
@@ -351,7 +352,8 @@ sensor_configuration = [
         "device_class": DEVICE_CLASS_TEMPERATURE,
         "unit_of_measurement": UNIT_CELSIUS,
         "accuracy_decimals": 1,
-        "state_class": STATE_CLASS_MEASUREMENT
+        "state_class": STATE_CLASS_MEASUREMENT,
+        "update_entities": ["thermal_power"],
     },
     {
         "type": "sensor",
@@ -393,13 +395,28 @@ sensor_configuration = [
         "device_class": DEVICE_CLASS_TEMPERATURE,
         "unit_of_measurement": UNIT_CELSIUS,
         "accuracy_decimals": 1,
-        "state_class": STATE_CLASS_MEASUREMENT
+        "state_class": STATE_CLASS_MEASUREMENT,
+        "update_entities": ["thermal_power"],
     },
     {
         "type": "sensor",
         "name": "dhw_temp",
         "registryID": 0x61,
         "offset": 10,
+        "signed": True,
+        "dataSize": 2,
+        "endian": Endian.LITTLE,
+        "divider": 10,
+        "device_class": DEVICE_CLASS_TEMPERATURE,
+        "unit_of_measurement": UNIT_LITER_PER_HOUR,
+        "accuracy_decimals": 1,
+        "state_class": STATE_CLASS_MEASUREMENT
+    },
+    {
+        "type": "sensor",
+        "name": "flow_rate",
+        "registryID": 0x62,
+        "offset": 9,
         "signed": True,
         "dataSize": 2,
         "endian": Endian.LITTLE,
@@ -421,6 +438,12 @@ def validate_setoutdoor_unit(value):
 CONF_ENTITIES = "entities"
 CONF_OUTDOR_UNIT = "outdoor_unit"
 CONF_PROJECT_GIT_HASH = "project_git_hash"
+
+########## Sensors ##########
+
+CONF_THERMAL_POWER = "thermal_power"
+CONF_THERMAL_POWER_RAW = "thermal_power_raw"
+
 
 entity_schemas = {}
 for sensor_conf in sensor_configuration:
@@ -452,6 +475,25 @@ for sensor_conf in sensor_configuration:
                     icon=sensor_conf.get("icon", cv.UNDEFINED)
                 )
             })
+
+entity_schemas.update({
+    ########## Sensors ##########
+
+    cv.Optional(CONF_THERMAL_POWER): sensor.sensor_schema(
+        UartSensor,
+        device_class=DEVICE_CLASS_POWER,
+        unit_of_measurement=UNIT_KILOWATT,
+        accuracy_decimals=2,
+        state_class=STATE_CLASS_MEASUREMENT
+    ),
+    cv.Optional(CONF_THERMAL_POWER_RAW): sensor.sensor_schema(
+        UartSensor,
+        device_class=DEVICE_CLASS_POWER,
+        unit_of_measurement=UNIT_KILOWATT,
+        accuracy_decimals=2,
+        state_class=STATE_CLASS_MEASUREMENT
+    ).extend(),
+})
 
 CONFIG_SCHEMA = cv.Schema(
     {
@@ -538,7 +580,19 @@ async def to_code(config):
                     EndianLittle if sens_conf.get("endian") == Endian.LITTLE else EndianBig,
                     divider,
                     sens_conf.get("accuracy_decimals", 0),
+                    sens_conf.get("update_entities", []),
                     await handle_lambda(),
                     "handle_lambda" in sens_conf
                 ]))
                 cg.add(var.add_entity(entity))
+
+        ########## Sensors ##########
+
+        if yaml_sensor_conf := entities.get(CONF_THERMAL_POWER):
+            sens = await sensor.new_sensor(yaml_sensor_conf)
+            cg.add(sens.set_id(CONF_THERMAL_POWER))
+            cg.add(var.set_thermal_power_sensor(sens))
+        if yaml_sensor_conf := entities.get(CONF_THERMAL_POWER_RAW):
+            sens = await sensor.new_sensor(yaml_sensor_conf)
+            cg.add(sens.set_id(CONF_THERMAL_POWER_RAW))
+            cg.add(var.set_thermal_power_sensor_raw(sens))

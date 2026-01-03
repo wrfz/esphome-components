@@ -146,5 +146,11 @@ daikin_rotex_uart:
       name: 4-Way Valve
     defrost_operation:
       name: Defrost Operation
+
+    thermal_power:
+      name: Thermal Power
+    thermal_power_raw:
+      name: Thermal Power Raw
+
     #voltage:  # Currently only known to be supported by ECH2O
     #  name: Voltage

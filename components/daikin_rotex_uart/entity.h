@@ -4,6 +4,7 @@
 #include <functional>
 #include <stdint.h>
 #include <variant>
+#include <list>
 
 namespace esphome {
 namespace daikin_rotex_uart {
@@ -23,7 +24,7 @@ public:
 
     struct TEntityArguments {
         EntityBase* pEntity;
-        std::string name;
+        std::string id;
         uint8_t registryID;
         uint8_t offset;
         bool isSigned;
@@ -31,12 +32,13 @@ public:
         Endian endian;
         double divider;
         uint8_t accuracy_decimals;
+        std::list<std::string> update_entities;
         THandleFunc handle_lambda;
         bool handle_lambda_set;
 
         TEntityArguments()
         : pEntity(nullptr)
-        , name("")
+        , id("")
         , registryID(0x0)
         , offset(0)
         , isSigned(false)
@@ -44,13 +46,14 @@ public:
         , endian(Endian::Little)
         , divider(1.0)
         , accuracy_decimals(1)
+        , update_entities({})
         , handle_lambda([](uint8_t*){ return 0; })
         , handle_lambda_set(false)
         {}
 
         TEntityArguments(
             EntityBase* _pEntity,
-            std::string const& _name,
+            std::string const& _id,
             uint8_t _registryID,
             uint8_t _offset,
             bool _isSigned,
@@ -58,11 +61,12 @@ public:
             Endian _endian,
             float _divider,
             uint8_t _accuracy_decimals,
+            std::list<std::string> const& _update_entities,
             THandleFunc _handle_lambda,
             bool _handle_lambda_set
         )
         : pEntity(_pEntity)
-        , name(_name)
+        , id(_id)
         , registryID(_registryID)
         , offset(_offset)
         , isSigned(_isSigned)
@@ -70,6 +74,7 @@ public:
         , endian(_endian)
         , divider(_divider)
         , accuracy_decimals(_accuracy_decimals)
+        , update_entities(_update_entities)
         , handle_lambda(_handle_lambda)
         , handle_lambda_set(_handle_lambda_set)
         {}
@@ -90,9 +95,8 @@ public:
         return m_config.pEntity != nullptr ? m_config.pEntity->get_name().str() : "<INVALID>";
     }
 
-    std::string getId() const {
-        return m_config.name;
-    }
+    std::string get_id() const;
+    void set_id(std::string const& id);
 
     uint8_t getRegistryID() const {
         return m_config.registryID;
@@ -112,9 +116,13 @@ public:
         m_config = std::move(arg);
     }
 
+    std::list<std::string> const& get_update_entities();
+
     void set_post_handle(TPostHandleLabda&& func) {
         m_post_handle_lambda = std::move(func);
     }
+
+    virtual void update(uint32_t millis) {}
 
 protected:
     virtual bool handleValue(uint16_t value, TVariant& current, TVariant& previous) = 0;
@@ -126,6 +134,18 @@ private:
     std::shared_ptr<TRequest> m_pRequest;
     TPostHandleLabda m_post_handle_lambda;
 };
+
+inline std::string TEntity::get_id() const {
+    return m_config.id;
+}
+
+inline void TEntity::set_id(std::string const& id) {
+    m_config.id = id;
+}
+
+inline std::list<std::string> const& TEntity::get_update_entities() {
+    return m_config.update_entities;
+}
 
 }
 }

@@ -59,7 +59,7 @@ std::string TEntity::convert(uint8_t* data) {
         } else {
             value = "Unsupported value type!";
         }
-        return Utils::format("%s: %s", m_config.name.c_str(), value.c_str());
+        return Utils::format("%s: %s", m_config.id.c_str(), value.c_str());
     }
     return "INV";
 }

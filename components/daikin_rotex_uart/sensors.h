@@ -3,6 +3,7 @@
 #include "esphome/components/daikin_rotex_uart/BidiMap.h"
 #include "esphome/components/daikin_rotex_uart/entity.h"
 #include "esphome/components/daikin_rotex_uart/utils.h"
+#include "esphome/components/daikin_rotex_uart/pid.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/text_sensor/text_sensor.h"
 #include "esphome/components/sensor/sensor.h"
@@ -21,13 +22,21 @@ class UartSensor : public sensor::Sensor, public TEntity {
     };
 
 public:
-    UartSensor() = default;
+    UartSensor();
+    UartSensor(std::string const& id);
     void set_range(Range const& range) { m_range = range; }
+    void set_smooth(bool smooth) { m_smooth = smooth; }
+
+    virtual void update(uint32_t millis) override;
+    void publish(float state);
 protected:
     virtual bool handleValue(uint16_t value, TVariant& current, TVariant& previous) override;
 private:
+    float m_state;
     Range m_range;
-    uint32_t trys;
+    PID m_pid;
+    bool m_smooth;
+    float m_smooth_state;
 };
 
 /////////////////////// UartTextSensor ///////////////////////

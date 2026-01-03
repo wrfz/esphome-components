@@ -42,7 +42,13 @@ public:
 
         return std::string(buffer.get(), buffer.get() + size - 1);
     }
+
+    static bool equals(float a, float b, float epsilon);
 };
+
+inline bool Utils::equals(float a, float b, float epsilon) {
+    return std::abs(a - b) <= epsilon;
+}
 
 }
 }

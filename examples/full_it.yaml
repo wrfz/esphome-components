@@ -146,5 +146,11 @@ daikin_rotex_uart:
       name: Valvola a 4 vie
     defrost_operation:
       name: Sbrinamento
+
+    thermal_power:
+      name: Potenza Termica
+    thermal_power_raw:
+      name: Potenza Termica Raw
+
     #voltage:  # Currently only known to be supported by ECH2O
     #  name: Tensione

@@ -32,7 +32,7 @@ void TMessageManager::add(TEntity* pEntity) {
 
 const TEntity* TMessageManager::getEntityById(const std::string& id) const {
     for (auto pEntity : m_messages) {
-        if (pEntity->getId() == id) {
+        if (pEntity->get_id() == id) {
             return pEntity;
         }
     }
@@ -48,7 +48,7 @@ UartSensor* TMessageManager::get_sensor(std::string const& id) {
     if (UartSensor* pSensor = dynamic_cast<UartSensor*>(pEntity)) {
         return pSensor;
     } else if (pEntity) {
-        ESP_LOGE(TAG, "Entity is not a sensor: %s", pEntity->getId().c_str());
+        ESP_LOGE(TAG, "Entity is not a sensor: %s", pEntity->get_id().c_str());
     } else {
         ESP_LOGE(TAG, "Entity not found: %s", id.c_str());
     }
@@ -60,7 +60,7 @@ UartSensor const* TMessageManager::get_sensor(std::string const& id) const {
     if (UartSensor const* pSensor = dynamic_cast<UartSensor const*>(pEntity)) {
         return pSensor;
     } else if (pEntity) {
-        ESP_LOGE(TAG, "Const Entity is not a sensor: %s", pEntity->getId().c_str());
+        ESP_LOGE(TAG, "Const Entity is not a sensor: %s", pEntity->get_id().c_str());
     } else {
         ESP_LOGE(TAG, "Const Entity not found: %s", id.c_str());
     }

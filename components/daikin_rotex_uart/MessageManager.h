@@ -20,6 +20,8 @@ public:
 
     const TEntity* getEntityById(const std::string& name) const;
     TEntity* getEntityById(const std::string& name);
+
+    const std::vector<TEntity*>& get_entities() const;
 private:
     void dumpRequests();
     std::shared_ptr<TRequest> getNextRequestToSend();
@@ -27,6 +29,10 @@ private:
     std::vector<TEntity*> m_messages;
     TBuffer m_buffer;
 };
+
+inline const std::vector<TEntity*>& TMessageManager::get_entities() const { 
+    return m_messages;
+}
 
 } // namespace daikin_rotex_uart
 } // namespace esphome

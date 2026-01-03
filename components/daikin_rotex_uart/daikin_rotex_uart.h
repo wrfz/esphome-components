@@ -26,29 +26,42 @@ class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
     void loop() override;
 
     void set_project_git_hash(text_sensor::TextSensor* pSensor, std::string const& hash);
+    void set_thermal_power_sensor(UartSensor* pSensor);
+    void set_thermal_power_sensor_raw(UartSensor* pSensor);
+
     void add_entity(UartSensor* pEntity);
     void add_entity(UartBinarySensor* pEntity);
     void add_entity(UartTextSensor* pEntity);
-
-    void call_later(TVoidFunc lambda, uint32_t timeout = 0u) {
-        const uint32_t timestamp = millis();
-        m_later_calls.push_back({lambda, timestamp + timeout});
-    }
 
 private:
     void add_base_entity(TEntity* pEntity);
 
     void on_post_handle(TEntity* pEntity, TEntity::TVariant const& current, TEntity::TVariant const& previous);
 
+    void updateState(std::string const& id);
+    void update_thermal_power();
+
     TMessageManager m_message_manager;
-    std::list<std::pair<TVoidFunc, uint32_t>> m_later_calls;
     text_sensor::TextSensor* m_project_git_hash_sensor;
+
+    UartSensor* m_thermal_power_sensor;
+    UartSensor* m_thermal_power_raw_sensor;
+    
     std::string m_project_git_hash;
 };
 
 inline void DaikinRotexUARTComponent::set_project_git_hash(text_sensor::TextSensor* pSensor, std::string const& hash) {
     m_project_git_hash_sensor = pSensor;
     m_project_git_hash = hash;
+}
+
+inline void DaikinRotexUARTComponent::set_thermal_power_sensor(UartSensor* pSensor) {
+    m_thermal_power_sensor = pSensor;
+    pSensor->set_smooth(true);
+}
+
+inline void DaikinRotexUARTComponent::set_thermal_power_sensor_raw(UartSensor* pSensor) {
+    m_thermal_power_raw_sensor = pSensor;
 }
 
 } // namespace daikin_rotex_uart
