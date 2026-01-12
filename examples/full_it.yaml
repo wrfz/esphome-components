@@ -78,8 +78,8 @@ button:
 
 uart:
   id: uart_bus
-  tx_pin: GPIO12
-  rx_pin: GPIO11
+  tx_pin: GPIO1
+  rx_pin: GPIO2
   baud_rate: 9600
   parity: EVEN
   data_bits: 8
@@ -89,7 +89,7 @@ daikin_rotex_uart:
   id: rotext_hpsu_uart
   uart_id: uart_bus
   language: it
-  #outdoor_unit: RRLQ004CAV3  #Please comment in your outdoor unit
+  #outdoor_unit: RRLQ004CAV3  #Per favore, decommenta l'unità esterna
   #outdoor_unit: RRLQ006CAV3
   #outdoor_unit: RRLQ008CAV3
   #outdoor_unit: RRLQ011CAW1
@@ -152,10 +152,15 @@ daikin_rotex_uart:
     temperature_spread_raw:
       name: Delta Temperatura Raw
 
-    thermal_power:
-      name: Potenza Termica
-    thermal_power_raw:
-      name: Potenza Termica Raw
+    #########################################################
+    #   Sensori aggiuntivi per dispositivi Daikin / ECH2O   #
+    #########################################################
 
-    #voltage:  # Currently only known to be supported by ECH2O
+    #flow_rate:
+    #  name: Durchfluss
+    #thermal_power:
+    #  name: Potenza Termica
+    #thermal_power_raw:
+    #  name: Potenza Termica Raw
+    #voltage:
     #  name: Tensione
