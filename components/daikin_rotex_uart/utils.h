@@ -43,6 +43,14 @@ public:
         return std::string(buffer.get(), buffer.get() + size - 1);
     }
 
+    static constexpr uint64_t hash_str(std::string_view str) {
+        uint64_t hash = 0xcbf29ce484222325;
+        for (char c : str) {
+            hash = (hash ^ c) * 0x100000001b3;
+        }
+        return hash;
+    }
+
     static bool equals(float a, float b, float epsilon);
 };
 

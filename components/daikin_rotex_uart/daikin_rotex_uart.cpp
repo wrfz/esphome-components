@@ -83,10 +83,18 @@ void DaikinRotexUARTComponent::loop() {
 }
 
 void DaikinRotexUARTComponent::updateState(std::string const& id) {
-    if (id == "thermal_power") {
-        update_thermal_power();
-    } else if (id == "temperature_spread") {
+    const uint64_t runtime_hash = Utils::hash_str(id);
+
+    switch (runtime_hash) {
+    case Utils::hash_str("temperature_spread"):
         update_temperature_spread();
+        break;
+
+    case Utils::hash_str("thermal_power"):
+        if (m_message_manager.get_sensor(FLOW_RATE, false) != nullptr) {
+            update_thermal_power();
+        }
+        break;
     }
 }
 

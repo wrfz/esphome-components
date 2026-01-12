@@ -15,8 +15,8 @@ public:
     bool sendNextRequest(uart::UARTDevice&);
     void handleResponse(uart::UARTDevice&);
 
-    UartSensor* get_sensor(std::string const& id);
-    UartSensor const* get_sensor(std::string const& id) const;
+    UartSensor* get_sensor(std::string const& id, bool log_missing = true);
+    UartSensor const* get_sensor(std::string const& id, bool log_missing = true) const;
 
     const TEntity* getEntityById(const std::string& name) const;
     TEntity* getEntityById(const std::string& name);
