@@ -12,22 +12,92 @@ namespace daikin_rotex_uart {
 
 static const char* TAG = "daikin-uart";
 
-void TMessageManager::add(TEntity* pEntity) {
-    std::shared_ptr<TRequest> pRequest;
+static const uint32_t PROBE_TIMEOUT_MS = 2000u;
 
-    bool found = false;
-    for (TEntity* pE : m_messages) {
-        if (pE->getRegistryID() == pEntity->getRegistryID()) {
-            pEntity->setRequest(pE->getRequest());
-            found = true;
-            break;
+// Fixed S-response frame length (registry + content + crc). 0x53/0x54/0x55 => 18 bytes,
+// 0x50/0x56 => 6 bytes.
+static uint8_t s_frame_length(uint8_t registryID) {
+    switch (registryID) {
+        case 0x50:
+        case 0x56:
+            return 6;
+        case 0x53:
+        case 0x54:
+        case 0x55:
+        default:
+            return 18;
+    }
+}
+
+void TMessageManager::add(TEntity* pEntity) {
+    m_messages.push_back(pEntity);
+}
+
+// (Re)build the shared request objects according to the currently active protocol.
+// Entities of the inactive protocol (and any entity before the protocol is resolved
+// during auto-detection) get a null request and are skipped everywhere.
+void TMessageManager::apply_protocol() {
+    for (TEntity* pEntity : m_messages) {
+        pEntity->setRequest(nullptr);
+    }
+
+    for (TEntity* pEntity : m_messages) {
+        if (!pEntity->is_active()) {
+            continue;
+        }
+
+        std::shared_ptr<TRequest> pRequest = nullptr;
+        for (TEntity* pEntity2 : m_messages) {
+            if (pEntity2 == pEntity || !pEntity2->is_active() || pEntity2->getRequest() == nullptr) {
+                continue;
+            }
+            if (pEntity2->getRegistryID() == pEntity->getRegistryID()) {
+                pRequest = pEntity2->getRequest();
+                break;
+            }
+        }
+
+        if (pRequest == nullptr) {
+            pRequest = std::make_shared<TRequest>(TProtocolManager::getInstance().get_active_protocol(), pEntity->getRegistryID());
+            pEntity->setRequest(pRequest);
+        } else {
+            pEntity->setRequest(pRequest);
         }
     }
-    if (!found) {
-        pEntity->setRequest(std::make_shared<TRequest>(pEntity->getRegistryID()));
+}
+
+void TMessageManager::resolve_protocol(TProtocol protocol) {
+    ESP_LOGI(TAG, "Protocol resolved: %s", protocol_to_str(protocol));
+    TProtocolManager::getInstance().set_protocol(protocol);
+    m_probe = TProbePhase::None;
+    m_buffer.clear();
+    apply_protocol();
+}
+
+// Send the next auto-detection probe. Probe I (0x60) first, on timeout probe the
+// S-registry 0x53, on a second timeout fall back to the I-protocol.
+bool TMessageManager::send_probe(uart::UARTDevice& device) {
+    const uint32_t timestamp = millis();
+
+    if (m_probe == TProbePhase::None) {
+        m_probe = TProbePhase::I;
+        m_probe_sent_at = timestamp;
+        return TRequest::sendFrame(device, TProtocol::I, 0x60);
     }
 
-    m_messages.push_back(pEntity);
+    if (m_probe == TProbePhase::I && (timestamp - m_probe_sent_at) > PROBE_TIMEOUT_MS) {
+        m_probe = TProbePhase::S;
+        m_probe_sent_at = timestamp;
+        return TRequest::sendFrame(device, TProtocol::S, 0x53);
+    }
+
+    if (m_probe == TProbePhase::S && (timestamp - m_probe_sent_at) > PROBE_TIMEOUT_MS) {
+        m_probe = TProbePhase::None;
+        resolve_protocol(TProtocol::I);
+        return false;
+    }
+
+    return false;
 }
 
 const TEntity* TMessageManager::getEntityById(const std::string& id) const {
@@ -72,6 +142,10 @@ UartSensor const* TMessageManager::get_sensor(std::string const& id, bool log_mi
 }
 
 bool TMessageManager::sendNextRequest(uart::UARTDevice& device) {
+    if (TProtocolManager::getInstance().is_auto()) {
+        return send_probe(device);
+    }
+
     std::shared_ptr<TRequest> pRequest = getNextRequestToSend();
     if (pRequest != nullptr) {
         return pRequest->send(device);
@@ -82,12 +156,55 @@ bool TMessageManager::sendNextRequest(uart::UARTDevice& device) {
 void TMessageManager::handleResponse(uart::UARTDevice& device) {
     std::string log_message = m_buffer.read(device);
 
+    if (TProtocolManager::getInstance().is_auto()) {
+        handleDetectionResponse();
+        return;
+    }
+
     if (m_buffer.size() >= 2 && m_buffer[0] == 0x15 && m_buffer[1] == 0xEA) {
         ESP_LOGW(TAG, "RX: Invalid request => data: %s", Utils::to_hex(m_buffer.data(), 2).c_str());
         m_buffer.shift(2);
         return;
     }
 
+    if (TProtocolManager::getInstance().is_s_active()) {
+        parseSResponse(log_message);
+    } else {
+        parseIResponse(log_message);
+    }
+}
+
+void TMessageManager::handleDetectionResponse() {
+    if (m_probe == TProbePhase::None) {
+        m_buffer.clear();
+        return;
+    }
+
+    if (m_buffer.size() >= 2 && m_buffer[0] == 0x15 && m_buffer[1] == 0xEA) {
+        // Device rejected the probe frame => it speaks the other protocol.
+        m_buffer.shift(2);
+        resolve_protocol(m_probe == TProbePhase::I ? TProtocol::S : TProtocol::I);
+        return;
+    }
+
+    if (m_buffer.size() >= 3 && m_buffer[0] == 0x40) {
+        // Legacy I-protocol response header.
+        m_buffer.clear();
+        resolve_protocol(TProtocol::I);
+        return;
+    }
+
+    if (m_probe == TProbePhase::S) {
+        const uint8_t registryID = m_buffer[0];
+        if (registryID == 0x50 || registryID == 0x53 || registryID == 0x54 || registryID == 0x55 || registryID == 0x56) {
+            m_buffer.clear();
+            resolve_protocol(TProtocol::S);
+            return;
+        }
+    }
+}
+
+void TMessageManager::parseIResponse(std::string const& log_message) {
     if (m_buffer.size() >= 3) {
         if (m_buffer[0] != 0x40) {
             ESP_LOGE(TAG, "Invalid response: %s", Utils::to_hex(m_buffer.data(), m_buffer.size()).c_str());
@@ -100,7 +217,11 @@ void TMessageManager::handleResponse(uart::UARTDevice& device) {
 
         if (m_buffer.size() >= (2 + length)) {
             const uint8_t header_size = 3;
+            std::string msg = log_message;
             for (auto& pEntity : m_messages) {
+                if (!pEntity->is_active()) {
+                    continue;
+                }
                 if (registryID == pEntity->getRegistryID()) {
                     uint8_t* input = m_buffer.data().data();
                     const uint8_t message_offset = header_size + pEntity->getOffset();
@@ -109,19 +230,60 @@ void TMessageManager::handleResponse(uart::UARTDevice& device) {
                         return;
                     }
                     input += message_offset;
-                    log_message += "|" + pEntity->convert(input);
-                    std::shared_ptr<TRequest> pRequest = pEntity->getRequest();
-                    pRequest->setHandled();
+                    msg += "|" + pEntity->convert(input);
+                    pEntity->getRequest()->setHandled();
                 }
             }
             m_buffer.shift(2 + length);
-            ESP_LOGI(TAG, "RX: %s", log_message.c_str());
+            ESP_LOGI(TAG, "RX: %s", msg.c_str());
             return;
         }
         ESP_LOGI(TAG, "RX: incomplete buffer: %s", log_message.c_str());
         return;
     }
     ESP_LOGI(TAG, "RX: incomplete header: %s", log_message.c_str());
+}
+
+void TMessageManager::parseSResponse(std::string const& log_message) {
+    if (m_buffer.size() < 1) {
+        ESP_LOGI(TAG, "RX[S]: incomplete header: %s", log_message.c_str());
+        return;
+    }
+
+    const uint8_t registryID = m_buffer[0];
+    const uint8_t frame_length = s_frame_length(registryID);
+
+    if (m_buffer.size() < frame_length) {
+        ESP_LOGI(TAG, "RX[S]: incomplete buffer: %s", log_message.c_str());
+        return;
+    }
+
+    // S-response CRC check. Warn only - never drop a frame on mismatch.
+    const uint8_t crc = TRequest::getCRC(m_buffer.data().data(), frame_length - 1);
+    if (crc != m_buffer[frame_length - 1]) {
+        ESP_LOGW(TAG, "RX[S] CRC mismatch: expected %02X, got %02X", crc, m_buffer[frame_length - 1]);
+    }
+
+    const uint8_t header_size = 1;
+    std::string msg = log_message;
+    for (auto& pEntity : m_messages) {
+        if (!pEntity->is_active()) {
+            continue;
+        }
+        if (registryID == pEntity->getRegistryID()) {
+            uint8_t* input = m_buffer.data().data();
+            const uint8_t message_offset = header_size + pEntity->getOffset();
+            if (message_offset < 1 || (message_offset + pEntity->getDataSize()) > frame_length) {
+                ESP_LOGE(TAG, "RX[S]: Invalid offset! message_offset: %d, message.data_size: %d, frame.size: %d", message_offset, pEntity->getDataSize(), frame_length);
+                return;
+            }
+            input += message_offset;
+            msg += "|" + pEntity->convert(input);
+            pEntity->getRequest()->setHandled();
+        }
+    }
+    m_buffer.shift(frame_length);
+    ESP_LOGI(TAG, "RX[S]: %s", msg.c_str());
 }
 
 std::shared_ptr<TRequest> TMessageManager::getNextRequestToSend() {
@@ -134,6 +296,9 @@ std::shared_ptr<TRequest> TMessageManager::getNextRequestToSend() {
     }
 
     for (auto& message : m_messages) {
+        if (!message->is_active() || message->getRequest() == nullptr) {
+            continue;
+        }
         std::shared_ptr<TRequest> pRequest = message->getRequest();
         if (pRequest->isInProgress()) {
             return std::shared_ptr<TRequest>();
@@ -142,6 +307,9 @@ std::shared_ptr<TRequest> TMessageManager::getNextRequestToSend() {
 
     std::shared_ptr<TRequest> pOldestRequest = nullptr;
     for (auto& message : m_messages) {
+        if (!message->is_active() || message->getRequest() == nullptr) {
+            continue;
+        }
         std::shared_ptr<TRequest> pRequest = message->getRequest();
         if (pRequest->isRequestRequired()) {
             if (pOldestRequest == nullptr || pRequest->getLastRequestTimestamp() < pOldestRequest->getLastRequestTimestamp()) {
@@ -160,6 +328,9 @@ void TMessageManager::dumpRequests() {
     std::list<uint8_t> used;
     bool first = true;
     for (auto& message : m_messages) {
+        if (!message->is_active() || message->getRequest() == nullptr) {
+            continue;
+        }
         std::shared_ptr<TRequest> pRequest = message->getRequest();
 
         const bool contains = (std::find(used.begin(), used.end(), pRequest->getRegistryId()) != used.end());

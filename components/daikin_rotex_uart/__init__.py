@@ -61,6 +61,8 @@ ERGA06EAV3 = "ERGA06EAV3"
 ERGA08DAV3 = "ERGA08DAV3"
 ERGA08EAV3H = "ERGA08EAV3H"
 RRGA08DAV3 = "RRGA08DAV3"
+RRLQ008BAV3 = "RRLQ008BAV3"
+RDLQ014AA6V3 = "RDLQ014AA6V3"
 
 OUTDOOR_UNIT = {
     RRLQ004CAV3: 1,
@@ -71,7 +73,9 @@ OUTDOOR_UNIT = {
     ERGA06EAV3: 6,
     ERGA08DAV3: 7,
     ERGA08EAV3H: 8,
-    RRGA08DAV3: 9
+    RRGA08DAV3: 9,
+    RRLQ008BAV3: 10,
+    RDLQ014AA6V3: 11
 }
 
 current_outdoor_unit = None
@@ -311,7 +315,32 @@ sensor_configuration = [
         },
         "handle_lambda": """
             return data[0] >> 4;
-        """
+        """,
+        "s": {
+            "registryID": 0x55,
+            "offset": 0,
+            "map": {
+                0x00: delayed_translate("fan_only"),
+                0x01: delayed_translate("heating"),
+                0x02: delayed_translate("cooling"),
+                0x03: delayed_translate("auto"),
+                0x04: delayed_translate("ventilation"),
+                0x05: delayed_translate("auto_cool"),
+                0x06: delayed_translate("auto_heat"),
+                0x07: delayed_translate("dry"),
+                0x08: delayed_translate("aux"),
+                0x09: delayed_translate("cooling_storage"),
+                0x0A: delayed_translate("heating_storage"),
+                0x0B: "UseStrdThrm(cl)1",
+                0x0C: "UseStrdThrm(cl)2",
+                0x0D: "UseStrdThrm(cl)3",
+                0x0E: "UseStrdThrm(cl)4",
+                0x0F: "UseStrdThrm(ht)1",
+                0x10: "UseStrdThrm(ht)2",
+                0x11: "UseStrdThrm(ht)3",
+                0x12: "UseStrdThrm(ht)4",
+            },
+        },
     },
     {
         "type": "binary_sensor",
@@ -357,6 +386,12 @@ sensor_configuration = [
         "accuracy_decimals": 1,
         "state_class": STATE_CLASS_MEASUREMENT,
         "update_entities": ["thermal_power", "temperature_spread"],
+        "s": {
+            "registryID": 0x54,
+            "offset": 4,
+            "signed": False,
+            "divider": 256,
+        },
     },
     {
         "type": "sensor",
@@ -384,7 +419,13 @@ sensor_configuration = [
         "device_class": DEVICE_CLASS_TEMPERATURE,
         "unit_of_measurement": UNIT_CELSIUS,
         "accuracy_decimals": 1,
-        "state_class": STATE_CLASS_MEASUREMENT
+        "state_class": STATE_CLASS_MEASUREMENT,
+        "s": {
+            "registryID": 0x54,
+            "offset": 0,
+            "signed": False,
+            "divider": 256,
+        },
     },
     {
         "type": "sensor",
@@ -400,6 +441,12 @@ sensor_configuration = [
         "accuracy_decimals": 1,
         "state_class": STATE_CLASS_MEASUREMENT,
         "update_entities": ["thermal_power", "temperature_spread"],
+        "s": {
+            "registryID": 0x54,
+            "offset": 2,
+            "signed": False,
+            "divider": 256,
+        },
     },
     {
         "type": "sensor",
@@ -413,7 +460,13 @@ sensor_configuration = [
         "device_class": DEVICE_CLASS_TEMPERATURE,
         "unit_of_measurement": UNIT_CELSIUS,
         "accuracy_decimals": 1,
-        "state_class": STATE_CLASS_MEASUREMENT
+        "state_class": STATE_CLASS_MEASUREMENT,
+        "s": {
+            "registryID": 0x54,
+            "offset": 8,
+            "signed": False,
+            "divider": 256,
+        },
     },
     {
         "type": "sensor",
@@ -447,6 +500,12 @@ sensor_configuration = [
     # 0x62 Not supported by HPSU Compact 2013 + RRLQ006CAV3
 ]
 
+########## S-Protocol ##########
+
+# S-protocol wire descriptions live as an "s:" sub-object in the matching entries of
+# the shared sensor_configuration list (see t_liq/tr/tv/dhw_temp/mode_of_operating).
+# Registry 0x53 relay/flag and 0x55 status signals without an I counterpart are not exposed.
+
 def validate_setoutdoor_unit(value):
     global current_outdoor_unit
     current_outdoor_unit = value
@@ -455,6 +514,7 @@ def validate_setoutdoor_unit(value):
 CONF_ENTITIES = "entities"
 CONF_OUTDOR_UNIT = "outdoor_unit"
 CONF_PROJECT_GIT_HASH = "project_git_hash"
+CONF_PROTOCOL = "protocol"
 
 ########## Sensors ##########
 
@@ -467,6 +527,8 @@ CONF_TEMPERATURE_SPREAD_RAW = "temperature_spread_raw"
 entity_schemas = {}
 for sensor_conf in sensor_configuration:
     name = sensor_conf.get("name")
+    if name in entity_schemas:
+        continue
 
     match sensor_conf.get("type"):
         case "sensor":
@@ -536,6 +598,7 @@ CONFIG_SCHEMA = cv.Schema(
         cv.Required(CONF_UART_ID): cv.use_id(UARTComponent),
         cv.Required(CONF_OUTDOR_UNIT): cv.ensure_list(cv.enum(OUTDOOR_UNIT), validate_setoutdoor_unit),
         cv.Required(CONF_LANGUAGE): cv.enum(SUPPORTED_LANGUAGES, lower=True, space="_"),
+        cv.Optional(CONF_PROTOCOL): cv.one_of("I", "S", upper=True),
         cv.Required(CONF_PROJECT_GIT_HASH): text_sensor.text_sensor_schema(
             icon="mdi:git",
             entity_category=ENTITY_CATEGORY_DIAGNOSTIC
@@ -575,16 +638,30 @@ async def to_code(config):
         t = await text_sensor.new_text_sensor(text_conf)
         cg.add(var.set_project_git_hash(t, git_hash))
 
+    if CONF_PROTOCOL in config:
+        cg.add(var.set_protocol_from_config(cg.RawExpression(f"esphome::daikin_rotex_uart::TProtocol::{config[CONF_PROTOCOL]}")))
+
+
     if entities := config.get(CONF_ENTITIES):
+        # One entity object per name. S-protocol metadata, when present, is nested as
+        # an "s:" sub-object inside the same sensor_configuration entry, so the entity
+        # is created once and configured for both protocols.
+        created_entities = {}
         for sens_conf in sensor_configuration:
-            if yaml_sensor_conf := entities.get(sens_conf.get("name")):
-                entity = None
+            name = sens_conf.get("name")
+            if not (yaml_sensor_conf := entities.get(name)):
+                continue
 
-                divider = sens_conf.get("divider", 1.0)
-                # translate mapping
-                mapping = apply_translation_to_mapping(sens_conf.get("map", {}))
-                str_map = "|".join([f"0x{int(key * divider) & 0xFFFF :02X}:{value}" for key, value in mapping.items()])
+            def resolve_divider(conf):
+                divider = conf.get("divider", 1.0)
+                if callable(divider):
+                    divider = divider()
+                if divider is None:
+                    divider = 1.0
+                return divider
 
+            entity = created_entities.get(name)
+            if entity is None:
                 match sens_conf.get("type"):
                     case "sensor":
                         entity = await sensor.new_sensor(yaml_sensor_conf)
@@ -592,33 +669,53 @@ async def to_code(config):
                         entity = await binary_sensor.new_binary_sensor(yaml_sensor_conf)
                     case "text_sensor":
                         entity = await text_sensor.new_text_sensor(yaml_sensor_conf)
-                        cg.add(entity.set_map(str_map))
+                created_entities[name] = entity
 
-                async def handle_lambda():
-                    lamb = sens_conf.get("handle_lambda", "return 0;")
-                    return await cg.process_lambda(
-                        Lambda(lamb),
-                        [(u8_ptr, "data")],
-                        return_type=cg.uint16,
-                    )
+            async def handle_lambda(conf):
+                lamb = conf.get("handle_lambda", "return 0;")
+                return await cg.process_lambda(
+                    Lambda(lamb),
+                    [(u8_ptr, "data")],
+                    return_type=cg.uint16,
+                )
 
-                if callable(divider):
-                    divider = divider()
-                cg.add(entity.set_entity([
+            def build_args(conf, defaults):
+                divider = resolve_divider(conf)
+                mapping = apply_translation_to_mapping(conf.get("map", {}))
+                str_map = "|".join([f"0x{int(key * divider) & 0xFFFF :02X}:{value}" for key, value in mapping.items()])
+                return [
                     entity,
-                    sens_conf.get("name"),
-                    sens_conf.get("registryID"),
-                    sens_conf.get("offset"),
-                    sens_conf.get("signed", True),
-                    sens_conf.get("dataSize", 0),
-                    EndianLittle if sens_conf.get("endian") == Endian.LITTLE else EndianBig,
+                    name,
+                    conf.get("registryID"),
+                    conf.get("offset"),
+                    conf.get("signed", defaults["signed"]),
+                    conf.get("dataSize", defaults["dataSize"]),
+                    EndianLittle if conf.get("endian") == Endian.LITTLE else EndianBig,
                     divider,
-                    sens_conf.get("accuracy_decimals", 0),
-                    sens_conf.get("update_entities", []),
-                    await handle_lambda(),
-                    "handle_lambda" in sens_conf
-                ]))
-                cg.add(var.add_entity(entity))
+                    conf.get("accuracy_decimals", 0),
+                    conf.get("update_entities", []),
+                ], str_map
+
+            i_args, i_str_map = build_args(sens_conf, {"signed": True, "dataSize": 0})
+            i_args.extend([await handle_lambda(sens_conf), "handle_lambda" in sens_conf])
+            cg.add(entity.set_entity(i_args))
+            if i_str_map:
+                cg.add(entity.set_map(i_str_map))
+
+            if s_conf := sens_conf.get("s"):
+                # Fields not named in "s:" inherit from the I entry, so identical
+                # values (endian, dataSize, accuracy, update_entities, ...) are not
+                # repeated. map/handle_lambda stay S-only.
+                merged = {k: v for k, v in sens_conf.items() if k not in ("map", "handle_lambda", "s")}
+                merged.update(s_conf)
+                s_args, s_str_map = build_args(merged, {"signed": False, "dataSize": 1})
+                s_args.extend([await handle_lambda(s_conf), "handle_lambda" in s_conf])
+                cg.add(entity.set_entity_s(s_args))
+                if s_str_map:
+                    cg.add(entity.set_map_s(s_str_map))
+
+        for entity in created_entities.values():
+            cg.add(var.add_entity(entity))
 
         ########## Sensors ##########
 

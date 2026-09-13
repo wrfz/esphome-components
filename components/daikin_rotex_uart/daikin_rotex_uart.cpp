@@ -24,6 +24,7 @@ DaikinRotexUARTComponent::DaikinRotexUARTComponent()
 , m_thermal_power_raw_sensor(new UartSensor("thermal_power_raw"))
 , m_temperature_spread_sensor(new UartSensor("temperature_spread")) // Used to detect valve malfunctions, even if the sensor has not been defined by the user.
 , m_temperature_spread_raw_sensor(new UartSensor("temperature_spread_raw"))
+, m_protocol_from_config(TProtocol::AUTO)
 , m_project_git_hash()
 {
     m_temperature_spread_sensor->set_smooth(true);
@@ -49,6 +50,11 @@ void DaikinRotexUARTComponent::add_base_entity(TEntity* pEntity) {
 }
 
 void DaikinRotexUARTComponent::setup() {
+    if (m_protocol_from_config != TProtocol::AUTO) {
+        TProtocolManager::getInstance().set_protocol(m_protocol_from_config);
+    }
+    m_message_manager.apply_protocol();
+
     m_project_git_hash_sensor->publish_state(m_project_git_hash);
 }
 
@@ -91,7 +97,8 @@ void DaikinRotexUARTComponent::updateState(std::string const& id) {
         break;
 
     case Utils::hash_str("thermal_power"):
-        if (m_message_manager.get_sensor(FLOW_RATE, false) != nullptr) {
+        UartSensor const* flow_rate = m_message_manager.get_sensor(FLOW_RATE, false);
+        if (flow_rate != nullptr && flow_rate->is_active()) {
             update_thermal_power();
         }
         break;

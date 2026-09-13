@@ -44,11 +44,22 @@ private:
 class UartTextSensor : public text_sensor::TextSensor, public TEntity {
 public:
     UartTextSensor() = default;
-    void set_map(std::string const& str_map) { m_map = Utils::str_to_map(str_map); }
+    void set_map(std::string const& str_map) {
+        m_map = Utils::str_to_map(str_map);
+        m_has_map = true;
+    }
+    void set_map_s(std::string const& str_map) {
+        m_map_s = Utils::str_to_map(str_map);
+        m_has_map_s = true;
+    }
 protected:
     virtual bool handleValue(uint16_t value, TVariant& current, TVariant& previous) override;
 private:
+    BidiMap const& active_map() const;
     BidiMap m_map;
+    BidiMap m_map_s;
+    bool m_has_map = false;
+    bool m_has_map_s = false;
 };
 
 /////////////////////// UartBinarySensor ///////////////////////

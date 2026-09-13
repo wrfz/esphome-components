@@ -24,10 +24,10 @@ UartSensor::UartSensor(std::string const& id)
 }
 
 bool UartSensor::handleValue(uint16_t value, TEntity::TVariant& current, TVariant& previous) {
-    if (m_config.isSigned) {
-        current = static_cast<int16_t>(value) / m_config.divider;
+    if (isSigned()) {
+        current = static_cast<int16_t>(value) / getDivider();
     } else {
-        current = value / m_config.divider;
+        current = value / getDivider();
     }
 
     const float float_value = std::get<double>(current);
@@ -72,9 +72,17 @@ void UartSensor::publish(float state) {
 
 /////////////////////// UartTextSensor ///////////////////////
 
+BidiMap const& UartTextSensor::active_map() const {
+    if (is_s_active()) {
+        return m_has_map_s ? m_map_s : m_map;
+    }
+    return m_has_map ? m_map : m_map_s;
+}
+
 bool UartTextSensor::handleValue(uint16_t value, TEntity::TVariant& current, TVariant& previous) {
-    const auto it = m_map.findByKey(value);
-    current = it != m_map.end() ? it->second : Utils::format("INVALID<%d>", value);
+    const auto& map = active_map();
+    const auto it = map.findByKey(value);
+    current = it != map.end() ? it->second : Utils::format("INVALID<%d>", value);
     publish_state(std::get<std::string>(current));
     return true;
 }

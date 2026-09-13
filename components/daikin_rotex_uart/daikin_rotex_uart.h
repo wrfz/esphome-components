@@ -2,6 +2,7 @@
 
 #include "esphome/components/daikin_rotex_uart/MessageManager.h"
 #include "esphome/components/daikin_rotex_uart/sensors.h"
+#include "esphome/components/daikin_rotex_uart/protocol.h"
 #include "esphome/components/text_sensor/text_sensor.h"
 #include "esphome/components/uart/uart.h"
 #include "esphome/core/component.h"
@@ -24,6 +25,8 @@ class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
     DaikinRotexUARTComponent();
     void setup() override;
     void loop() override;
+
+    void set_protocol_from_config(TProtocol protocol);
 
     void set_project_git_hash(text_sensor::TextSensor* pSensor, std::string const& hash);
     void set_thermal_power_sensor(UartSensor* pSensor);
@@ -53,8 +56,14 @@ private:
     UartSensor* m_temperature_spread_sensor;
     UartSensor* m_temperature_spread_raw_sensor;
 
+    TProtocol m_protocol_from_config = TProtocol::AUTO;
+
     std::string m_project_git_hash;
 };
+
+inline void DaikinRotexUARTComponent::set_protocol_from_config(TProtocol protocol) {
+    m_protocol_from_config = protocol;
+}
 
 inline void DaikinRotexUARTComponent::set_project_git_hash(text_sensor::TextSensor* pSensor, std::string const& hash) {
     m_project_git_hash_sensor = pSensor;

@@ -20,17 +20,17 @@ TEntity::TEntity()
 
 std::string TEntity::convert(uint8_t* data) {
     uint16_t value = 0u;
-    if (m_config.handle_lambda_set)
+    if (hasHandleLambda())
     {
-        value = m_config.handle_lambda(data);
+        value = callHandleLambda(data);
     }
     else
     {
-        if (m_config.data_size == 1)
+        if (getDataSize() == 1)
         {
             value = (uint16_t)data[0];
         }
-        else if (m_config.endian == Endian::Little)
+        else if (getEndian() == Endian::Little)
         {
             value = ((uint16_t)(data[1] << 8) | (uint16_t)data[0]);
         }
@@ -51,7 +51,7 @@ std::string TEntity::convert(uint8_t* data) {
 
         std::string value;
         if (std::holds_alternative<double>(current)) {
-            value = Utils::format("%.*f", m_config.accuracy_decimals, std::get<double>(current));
+            value = Utils::format("%.*f", getAccuracyDecimals(), std::get<double>(current));
         } else if (std::holds_alternative<bool>(current)) {
             value = std::get<bool>(current);
         } else if (std::holds_alternative<std::string>(current)) {
