@@ -23,10 +23,10 @@ public:
     uint8_t getRegistryId() const;
     uint32_t getLastRequestTimestamp() const;
     uint32_t getLastResponeTimestamp() const;
-private:
+
     static uint8_t getCRC(uint8_t const* data, uint32_t len);
     static bool sendFrame(uart::UARTDevice& device, TProtocol protocol, uint8_t registryID);
-
+private:
     TProtocol m_protocol;
     uint8_t m_registryID;
     uint32_t m_last_request_timestamp;
