@@ -26,6 +26,7 @@ jobs:
       - name: Prepare local component source and secrets
         run: |
           sed -i "s|source: github://wrfz/esphome-components|source: ${{ github.workspace }}/components|" examples/*.yaml
+          sed -i "s|^  #outdoor_unit: RRLQ004CAV3.*|  outdoor_unit: RRLQ004CAV3|" examples/*.yaml
           cat > examples/secrets.yaml <<EOF
           wifi_ssid: esphome-test
           wifi_password: esphome-test
