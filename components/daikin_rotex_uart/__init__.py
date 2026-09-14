@@ -469,6 +469,20 @@ sensor_configuration = [
         },
     },
     {
+        "type": "binary_sensor",
+        "name": "circulation_pump",
+        "registryID": 0x62,
+        "offset": 8,
+        "dataSize": 1,
+        "handle_lambda": """
+            return (data[0] & 0x4) > 0;
+        """,
+        "icon": "mdi:pump",
+        "s": {
+            "registryID": 0x53,
+        },
+    },
+    {
         "type": "sensor",
         "name": "flow_rate",
         "registryID": 0x62,

@@ -165,3 +165,10 @@ daikin_rotex_uart:
     #  name: Potenza Termica Raw
     #voltage:
     #  name: Tensione
+
+    ###################################################################
+    #   Sensori per dispositivi con protocollo S (es. RDLQ014AA6V3)   #
+    ###################################################################
+
+    circulation_pump:
+      name: Pompa di Circolazione

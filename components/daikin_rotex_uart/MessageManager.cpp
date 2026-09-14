@@ -238,7 +238,7 @@ void TMessageManager::parseIResponse(std::string const& log_message) {
             ESP_LOGI(TAG, "RX: %s", msg.c_str());
             return;
         }
-        ESP_LOGI(TAG, "RX: incomplete buffer: %s", log_message.c_str());
+        ESP_LOGI(TAG, "RX: incomplete buffer (%d of %d): %s", static_cast<int>(m_buffer.size()), static_cast<int>(2 + length), Utils::to_hex(m_buffer.data(), m_buffer.size()).c_str());
         return;
     }
     ESP_LOGI(TAG, "RX: incomplete header: %s", log_message.c_str());
@@ -254,7 +254,7 @@ void TMessageManager::parseSResponse(std::string const& log_message) {
     const uint8_t frame_length = s_frame_length(registryID);
 
     if (m_buffer.size() < frame_length) {
-        ESP_LOGI(TAG, "RX[S]: incomplete buffer: %s", log_message.c_str());
+        ESP_LOGI(TAG, "RX[S]: incomplete buffer (%d of %d): %s", static_cast<int>(m_buffer.size()), static_cast<int>(frame_length), Utils::to_hex(m_buffer.data(), m_buffer.size()).c_str());
         return;
     }
 

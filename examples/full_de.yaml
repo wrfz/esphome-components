@@ -165,3 +165,10 @@ daikin_rotex_uart:
     #  name: Thermische Leistung Raw
     #voltage:
     #  name: Spannung
+
+    ##############################################################
+    #   Sensoren für Geräte mit S-Protokol (z.B. RDLQ014AA6V3)   #
+    ##############################################################
+
+    circulation_pump:
+      name: Umwaelzpumpe

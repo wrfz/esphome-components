@@ -165,3 +165,10 @@ daikin_rotex_uart:
     #  name: Thermal Power Raw
     #voltage:
     #  name: Voltage
+
+    ################################################################
+    #   Sensors for devices with S-Protocol (e.g., RDLQ014AA6V3)   #
+    ################################################################
+
+    circulation_pump:
+      name: Circulation Pump
