@@ -1,0 +1,46 @@
+name: Component compile test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  esphome-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install ESPHome
+        run: pip install esphome
+
+      - name: Prepare local component source and secrets
+        run: |
+          sed -i "s|source: github://wrfz/esphome-components|source: ${{ github.workspace }}|" examples/*.yaml
+          cat > examples/secrets.yaml <<EOF
+          wifi_ssid: esphome-test
+          wifi_password: esphome-test
+          hpsu_uart_ota_password: esphomeTest123
+          hpsu_uart_api_encryption_key: $(openssl rand -base64 32)
+          EOF
+
+      - name: Validate configs
+        run: |
+          for f in examples/full_en.yaml examples/full_de.yaml examples/full_it.yaml; do
+            esphome config "$f" || exit 1
+          done
+
+      - name: Compile configs
+        run: |
+          for f in examples/full_en.yaml examples/full_de.yaml examples/full_it.yaml; do
+            esphome compile "$f" || exit 1
+          done

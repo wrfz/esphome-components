@@ -215,7 +215,19 @@ void TMessageManager::parseIResponse(std::string const& log_message) {
         const uint8_t registryID = m_buffer[1];
         const uint8_t length = m_buffer[2];
 
+        if (length > 32) {
+            ESP_LOGW(TAG, "RX: invalid length %02X => clear: %s", length, Utils::to_hex(m_buffer.data(), m_buffer.size()).c_str());
+            m_buffer.clear();
+            return;
+        }
+
         if (m_buffer.size() >= (2 + length)) {
+            const uint8_t crc = TRequest::getCRC(m_buffer.data().data(), (2 + length) - 1);
+            if (crc != m_buffer[(2 + length) - 1]) {
+                ESP_LOGW(TAG, "RX: CRC mismatch: expected %02X, got %02X => clear: %s", crc, m_buffer[(2 + length) - 1], Utils::to_hex(m_buffer.data(), m_buffer.size()).c_str());
+                m_buffer.clear();
+                return;
+            }
             const uint8_t header_size = 3;
             std::string msg = log_message;
             for (auto& pEntity : m_messages) {
