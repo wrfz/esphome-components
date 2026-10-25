@@ -133,6 +133,8 @@ daikin_rotex_uart:
       name: TR
     outdoor_temp:
       name: Outdoor Air Temperature
+    tgt_evap_temp:
+      name: Target Evaporation Temperature
     tgt_cond_temp:
       name: Target Condensation Temperature
     buh1:

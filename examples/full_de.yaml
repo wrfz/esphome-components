@@ -133,8 +133,10 @@ daikin_rotex_uart:
       name: TR
     outdoor_temp:
       name: Outdoor Air Temp
+    tgt_evap_temp:
+      name: Ziel-Verdampfungstemperatur
     tgt_cond_temp:
-      name: Zielverflüssigungstemperatur
+      name: Ziel-Kondensationstemperatur
     buh1:
       name: Heizstab Stufe 1
     buh2:

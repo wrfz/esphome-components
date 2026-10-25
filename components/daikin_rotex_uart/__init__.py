@@ -118,7 +118,7 @@ sensor_configuration = [
     },
     {
         "type": "sensor",
-        "name": "tgt_cond_temp",
+        "name": "tgt_evap_temp",
         "registryID": 0x10,
         "offset": 6,
         "signed": True,
@@ -130,8 +130,28 @@ sensor_configuration = [
         "accuracy_decimals": 1,
         "state_class": STATE_CLASS_MEASUREMENT,
         "handle_lambda": """
-            const int16_t value = static_cast<int16_t>(data[1] << 8 | data[0]);
-            return value / 256.0 * 10.0 * 10.0;
+            const uint16_t raw = (uint16_t(data[1]) << 8) | data[0];
+            if (raw == 0x8000) return 0;
+            return static_cast<uint16_t>(static_cast<int16_t>(raw) / 2.56f);
+        """
+    },
+    {
+        "type": "sensor",
+        "name": "tgt_cond_temp",
+        "registryID": 0x10,
+        "offset": 8,
+        "signed": True,
+        "dataSize": 2,
+        "endian": Endian.LITTLE,
+        "divider": 10,
+        "device_class": DEVICE_CLASS_TEMPERATURE,
+        "unit_of_measurement": UNIT_CELSIUS,
+        "accuracy_decimals": 1,
+        "state_class": STATE_CLASS_MEASUREMENT,
+        "handle_lambda": """
+            const uint16_t raw = (uint16_t(data[1]) << 8) | data[0];
+            if (raw == 0x8000) return 0;
+            return static_cast<uint16_t>(static_cast<int16_t>(raw) / 2.56f);
         """
     },
     {
