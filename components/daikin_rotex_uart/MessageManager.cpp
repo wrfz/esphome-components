@@ -236,15 +236,12 @@ void TMessageManager::parseIResponse(std::string const& log_message) {
                     continue;
                 }
                 if (registryID == pEntity->getRegistryID()) {
-                    uint8_t* input = m_buffer.data().data();
-                    const uint8_t message_offset = header_size + pEntity->getOffset();
-                    if (message_offset < 3 || (message_offset + pEntity->getDataSize()) > m_buffer.size()) {
-                        ESP_LOGE(TAG, "RX: Invalid offset! message_offset: %d, message.data_size: %d, buffer.size: %d", message_offset, pEntity->getDataSize(), static_cast<int>(m_buffer.size()));
-                        return;
-                    }
-                    input += message_offset;
-                    msg += "|" + pEntity->convert(input);
                     pEntity->getRequest()->setHandled();
+                    // payload: after the header, before the CRC
+                    if (!in_payload(*pEntity, header_size, (2 + length) - 1)) {
+                        continue;
+                    }
+                    msg += "|" + pEntity->convert(m_buffer.data().data() + header_size + pEntity->getOffset());
                 }
             }
             m_buffer.shift(2 + length);
@@ -256,6 +253,22 @@ void TMessageManager::parseIResponse(std::string const& log_message) {
         return;
     }
     ESP_LOGD(TAG, "RX: incomplete header: %s", log_message.c_str());
+}
+
+// The entity's bytes lie within the payload [payload_begin, payload_end). A device may send a
+// shorter frame than the entity expects; bytes beyond the payload are the CRC or the next frame.
+// Reported once per entity.
+bool TMessageManager::in_payload(TEntity& entity, uint8_t payload_begin, uint8_t payload_end) {
+    const uint8_t size = std::max<uint8_t>(entity.getDataSize(), 1);
+    if (payload_begin + entity.getOffset() + size <= payload_end) {
+        return true;
+    }
+    if (!entity.out_of_frame_reported()) {
+        entity.set_out_of_frame_reported();
+        ESP_LOGW(TAG, "RX: %s: offset %d + %d byte(s) beyond the %d payload bytes of registry 0x%02X => no value",
+            entity.get_id().c_str(), entity.getOffset(), size, payload_end - payload_begin, entity.getRegistryID());
+    }
+    return false;
 }
 
 void TMessageManager::parseSResponse(std::string const& log_message) {
@@ -287,15 +300,12 @@ void TMessageManager::parseSResponse(std::string const& log_message) {
             continue;
         }
         if (registryID == pEntity->getRegistryID()) {
-            uint8_t* input = m_buffer.data().data();
-            const uint8_t message_offset = header_size + pEntity->getOffset();
-            if (message_offset < 1 || (message_offset + pEntity->getDataSize()) > frame_length) {
-                ESP_LOGE(TAG, "RX[S]: Invalid offset! message_offset: %d, message.data_size: %d, frame.size: %d", message_offset, pEntity->getDataSize(), frame_length);
-                return;
-            }
-            input += message_offset;
-            msg += "|" + pEntity->convert(input);
             pEntity->getRequest()->setHandled();
+            // payload: after the registry byte, before the CRC
+            if (!in_payload(*pEntity, header_size, frame_length - 1)) {
+                continue;
+            }
+            msg += "|" + pEntity->convert(m_buffer.data().data() + header_size + pEntity->getOffset());
         }
     }
     m_buffer.shift(frame_length);

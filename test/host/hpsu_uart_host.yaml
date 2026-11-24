@@ -42,6 +42,12 @@ daikin_rotex_uart:
       name: INV Primary Current
     fan_speed:
       name: Ventilatordrehzahl
+    inv_freq:
+      name: Kompressor Drehzahl
+    4_way_valve:
+      name: 4-Wege-Ventil
+    voltage:
+      name: Spannung
     mode_of_operating:
       name: Betriebsart
     tv:

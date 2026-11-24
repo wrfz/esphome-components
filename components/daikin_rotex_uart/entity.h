@@ -139,12 +139,16 @@ public:
 
     virtual void update(uint32_t millis) {}
 
+    bool out_of_frame_reported() const { return m_out_of_frame_reported; }
+    void set_out_of_frame_reported() { m_out_of_frame_reported = true; }
+
 protected:
     virtual bool handleValue(uint16_t value, TVariant& current, TVariant& previous) = 0;
 
 protected:
     TEntityArguments m_config;
     TEntityArguments m_config_s;
+    bool m_out_of_frame_reported = false;
 
 private:
     std::shared_ptr<TRequest> m_pRequest;

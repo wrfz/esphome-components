@@ -53,7 +53,7 @@ std::string TEntity::convert(uint8_t* data) {
         if (std::holds_alternative<double>(current)) {
             value = Utils::format("%.*f", getAccuracyDecimals(), std::get<double>(current));
         } else if (std::holds_alternative<bool>(current)) {
-            value = std::get<bool>(current);
+            value = std::get<bool>(current) ? "on" : "off";
         } else if (std::holds_alternative<std::string>(current)) {
             value = std::get<std::string>(current);
         } else {

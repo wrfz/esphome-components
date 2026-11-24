@@ -1,7 +1,6 @@
 """S protocol (older Daikin / Rotex, e.g. RDLQ014AA6V3) and the protocol detection.
 
-Frames and layout as in ESPAltherma (doc/Daikin S protocol.md, include/def/PROTOCOL_S_ROTEX.h):
-request 02 <registry> <crc>, response <registry> <payload> <crc> with a fixed length.
+Request 02 <registry> <crc>, response <registry> <payload> <crc> with a fixed length.
 """
 
 import pytest
@@ -49,7 +48,7 @@ async def test_values_reach_home_assistant(start_device, s_hpsu):
 
 
 async def test_circulation_pump(start_device, s_hpsu):
-    # PROTOCOL_S_ROTEX.h: 0x53 byte 0 is the circulation pump (0 off, else on)
+    # 0x53 byte 0 is the circulation pump (0 off, else on)
     device = await start_device()
     await device.wait_state("Umwaelzpumpe", "True")
 
@@ -58,7 +57,7 @@ async def test_circulation_pump(start_device, s_hpsu):
 
 
 async def test_real_frame_from_a_rotex_rrlq008bav3(start_device, s_hpsu):
-    # 0x55 response of an S device (issue wrfz/esphome-components#18): 18 bytes, mode heating
+    # 0x55 response of an RRLQ008BAV3 (S protocol): 18 bytes, mode heating
     frame = bytes.fromhex("55 01 00 00 00 00 10 00 00 00 00 00 00 00 00 00 00 99")
     assert frame == s_frame(0x55, frame[1:-1])  # length and CRC as the simulator builds them
     s_hpsu.frames[0x55] = frame
@@ -68,7 +67,7 @@ async def test_real_frame_from_a_rotex_rrlq008bav3(start_device, s_hpsu):
 
 
 async def test_dhw_priority(start_device, s_hpsu):
-    # PROTOCOL_S_ROTEX.h: 0x53 byte 5 is "Priority to domestic water"
+    # 0x53 byte 5 is the priority to domestic hot water
     s_hpsu.frames[0x53] = s_frame(0x53, payload(16, o5=bytes([0x01])))
     device = await start_device()
     await device.wait_state("Vorrang Warmwasser", "True")

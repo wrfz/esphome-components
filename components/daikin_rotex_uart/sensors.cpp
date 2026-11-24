@@ -59,7 +59,7 @@ void UartSensor::update(uint32_t millis) {
             m_smooth_state += m_pid.compute(m_state, m_smooth_state, dt, logstr);
             //ESP_LOGI(TAG, "update() PID %s: %s, val: %f", get_id().c_str(), logstr.c_str(), m_smooth_state);
 
-            // round to 0.01 (ceil shifted the value up a little with every step, fed back into the PID)
+            // round to 0.01 (fed back into the PID: rounding must not shift the value in one direction)
             m_smooth_state = std::round(m_smooth_state * 100.0) / 100.0;
 
             publish_state(m_smooth_state);

@@ -33,8 +33,7 @@ On a network mount (sshfs, Samba) use a build folder on the local disk, e.g. `-B
 UART opens `/tmp/hpsu-uart-pty`, a symlink to a pseudo terminal; on the other side `conftest.py`
 plays the HPSU: it answers each request with the frame the test set for that registry, optionally
 in two parts or not at all. It speaks the I protocol (`03 40 <registry> <crc>`) or the S protocol
-(`02 <registry> <crc>`, fixed response length); frames and the S layout follow ESPAltherma
-(`doc/Daikin S protocol.md`, `include/def/PROTOCOL_S_ROTEX.h`).
+(`02 <registry> <crc>`, fixed response length).
 
 The pytest tests talk to the program through the native API like Home Assistant and check the
 values, the log and the requests: values per registry, responses in parts, CRC errors, lost

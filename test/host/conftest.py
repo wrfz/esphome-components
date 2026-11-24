@@ -5,7 +5,7 @@ a symlink to a pseudo terminal whose other side is the simulated HPSU here: it a
 request in its protocol with the frame set for that registry. Each test starts a fresh process
 and talks to it through the native API like Home Assistant.
 
-Protocols (ESPAltherma, doc/Daikin I protocol.md and doc/Daikin S protocol.md):
+Protocols:
 - I: request 03 40 <registry> <crc>, response 40 <registry> <length> <payload> <crc>
 - S: request 02 <registry> <crc>, response <registry> <payload> <crc> with a fixed length per
   registry (18 bytes, 6 for 0x50 and 0x56)
@@ -99,7 +99,7 @@ def default_frames() -> dict[int, bytes]:
 
 
 def s_frames() -> dict[int, bytes]:
-    """A heating Rotex HPSU on the S protocol (layout of ESPAltherma PROTOCOL_S_ROTEX.h)."""
+    """A heating Rotex HPSU on the S protocol (e.g. RDLQ014AA6V3)."""
     return {
         0x53: s_frame(0x53, bytes([0x01])),                                     # circulation pump on
         0x54: s_frame(0x54, payload(16, o2=u16_256(26.5), o4=u16_256(29.5))),  # tr, tv

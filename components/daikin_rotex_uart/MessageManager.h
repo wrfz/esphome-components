@@ -39,6 +39,7 @@ private:
     void resolve_protocol(TProtocol protocol);
     void parseIResponse(std::string const& log_message);
     void parseSResponse(std::string const& log_message);
+    bool in_payload(TEntity& entity, uint8_t payload_begin, uint8_t payload_end);
 
     std::vector<TEntity*> m_messages;
     TBuffer m_buffer;

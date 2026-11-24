@@ -59,7 +59,7 @@ bool Scheduler::accelerate_call(CallHandle::CallID id) {
 }
 
 bool Scheduler::cancel_call(CallHandle::CallID id) {
-    // list::remove_if unlinks nodes; std::remove_if would move the other calls around
+    // list::remove_if unlinks the node and leaves the other calls in place
     const size_t size_before = m_later_calls.size();
     m_later_calls.remove_if([id](const DelayedCall& call) {
         return call.id == id;

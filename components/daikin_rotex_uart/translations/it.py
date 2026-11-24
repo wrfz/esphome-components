@@ -5,6 +5,7 @@
 
 translations_it = {
     "standby": "Standby",
+    "reversed": "Inversione",  # 4-way valve position: cooling / defrosting
     "heating": "Riscaldamento",
     "cooling": "Raffreddamento",
     "hot_water": "Preparazione acqua calda",

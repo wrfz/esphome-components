@@ -75,8 +75,8 @@ async def test_frame_of_another_registry_does_not_set_values(device):
 
 
 async def test_no_response_no_nan_flood(start_device, hpsu):
-    # registry 0x61 (tv, tr) never answers: the spread has no value. Before the fix, the smoothed
-    # spread published NaN in every loop (about every 100 ms) once the program ran 10 s.
+    # registry 0x61 (tv, tr) never answers: the spread has no value. The smoothed spread must not
+    # publish NaN with every loop.
     del hpsu.frames[0x61]
     device = await start_device()
 
@@ -85,3 +85,39 @@ async def test_no_response_no_nan_flood(start_device, hpsu):
     assert device.states.get(TV, UNKNOWN) == UNKNOWN
     published = [state for name, state in device.history if name == SPREAD]
     assert len(published) <= 1, f"{len(published)} states, e.g. {published[:3]}"
+
+
+# Frames of a Rotex HPSU
+REAL_0X30_HEATING = bytes.fromhex("40 30 0D 3A 50 00 D1 01 00 00 80 00 00 00 A6")   # 4-way valve: byte 7 = 80
+REAL_0X30_DEFROST = bytes.fromhex("40 30 0D 2C 00 00 5E 01 00 00 00 00 00 00 F7")   # while defrosting: 00
+REAL_0X21 = bytes.fromhex("40 21 07 3A 00 32 00 00 2B")  # 5 payload bytes: no voltage (offset 4, 2 bytes)
+
+
+async def test_4_way_valve(device):
+    device.hpsu.frames[0x30] = REAL_0X30_HEATING
+    start = len(device.log)
+    await device.wait_state("4-Wege-Ventil", "Heizen")
+    await device.wait_state("Ventilatordrehzahl", "800.0")
+    await device.wait_log(start, "4_way_valve: Heizen")
+
+    device.hpsu.frames[0x30] = REAL_0X30_DEFROST
+    await device.wait_state("4-Wege-Ventil", "Umkehr")
+
+
+async def test_offset_beyond_payload_gives_no_value(start_device, hpsu):
+    hpsu.frames[0x21] = REAL_0X21
+    device = await start_device()
+    start = 0
+
+    await device.wait_state("INV Primary Current", "5.8")  # the other values of the frame still count
+    await device.wait_requests(0x21, count=2)
+
+    assert device.states.get("Spannung", UNKNOWN) == UNKNOWN  # would be byte 4 and the CRC
+    warnings = [line for line in device.log[start:] if "voltage: offset 4" in line]
+    assert len(warnings) == 1, warnings  # reported once, not with every frame
+
+
+async def test_binary_value_in_log(device):
+    # binary values as on/off in the RX line
+    await device.wait_state("Umwaelzpumpe", "True")
+    await device.wait_log(0, "circulation_pump: on")

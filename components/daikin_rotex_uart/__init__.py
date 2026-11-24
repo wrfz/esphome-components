@@ -316,12 +316,16 @@ sensor_configuration = [
         "icon": "mdi:pipe-valve"
     },
     {
-        "type": "binary_sensor",
+        "type": "text_sensor",
         "name": "4_way_valve",
         "registryID": 0x30,
-        "offset": 11,
+        "offset": 7,
+        "map": {
+            0x00: delayed_translate("reversed"),
+            0x01: delayed_translate("heating"),
+        },
         "handle_lambda": """
-            return (data[0] & 0x80) > 0;
+            return (data[0] & 0x80) ? 1 : 0;
         """,
         "icon": "mdi:numeric-4-circle-outline"
     },
