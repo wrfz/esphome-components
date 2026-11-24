@@ -250,7 +250,8 @@ void TMessageManager::parseIResponse(std::string const& log_message) {
             ESP_LOGI(TAG, "RX: %s", msg.c_str());
             return;
         }
-        ESP_LOGI(TAG, "RX: incomplete buffer (%d of %d): %s", static_cast<int>(m_buffer.size()), static_cast<int>(2 + length), Utils::to_hex(m_buffer.data(), m_buffer.size()).c_str());
+        // normal since ESPHome 2025.10: the ESP32 UART driver hands over data in parts (rx_full_threshold)
+        ESP_LOGD(TAG, "RX: incomplete buffer (%d of %d): %s", static_cast<int>(m_buffer.size()), static_cast<int>(2 + length), Utils::to_hex(m_buffer.data(), m_buffer.size()).c_str());
         return;
     }
     ESP_LOGI(TAG, "RX: incomplete header: %s", log_message.c_str());
@@ -266,7 +267,8 @@ void TMessageManager::parseSResponse(std::string const& log_message) {
     const uint8_t frame_length = s_frame_length(registryID);
 
     if (m_buffer.size() < frame_length) {
-        ESP_LOGI(TAG, "RX[S]: incomplete buffer (%d of %d): %s", static_cast<int>(m_buffer.size()), static_cast<int>(frame_length), Utils::to_hex(m_buffer.data(), m_buffer.size()).c_str());
+        // normal since ESPHome 2025.10: the ESP32 UART driver hands over data in parts (rx_full_threshold)
+        ESP_LOGD(TAG, "RX[S]: incomplete buffer (%d of %d): %s", static_cast<int>(m_buffer.size()), static_cast<int>(frame_length), Utils::to_hex(m_buffer.data(), m_buffer.size()).c_str());
         return;
     }
 
