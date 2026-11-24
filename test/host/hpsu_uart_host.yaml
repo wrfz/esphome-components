@@ -48,5 +48,11 @@ daikin_rotex_uart:
       name: TV
     tr:
       name: TR
+    dhw_temp:
+      name: Warmwasser
+    circulation_pump:
+      name: Umwaelzpumpe
+    dhw_priority:
+      name: Vorrang Warmwasser
     temperature_spread:
       name: Spreizung

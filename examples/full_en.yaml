@@ -175,3 +175,5 @@ daikin_rotex_uart:
 
     circulation_pump:
       name: Circulation Pump
+    dhw_priority:
+      name: DHW Priority

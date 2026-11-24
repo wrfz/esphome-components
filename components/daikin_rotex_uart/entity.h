@@ -164,7 +164,8 @@ inline bool TEntity::is_s_active() const {
 }
 
 inline bool TEntity::is_i_active() const {
-    return TProtocolManager::getInstance().is_i_active();
+    // registry 0: the entry has no I layout (S protocol only), never read on I devices
+    return TProtocolManager::getInstance().is_i_active() && m_config.registryID != 0;
 }
 
 inline bool TEntity::is_active() const {

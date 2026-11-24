@@ -175,3 +175,5 @@ daikin_rotex_uart:
 
     circulation_pump:
       name: Pompa di Circolazione
+    dhw_priority:
+      name: Priorità Acqua Calda

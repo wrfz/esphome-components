@@ -509,6 +509,17 @@ sensor_configuration = [
         "icon": "mdi:pump",
         "s": {
             "registryID": 0x53,
+            "offset": 0
+        },
+    },
+    {
+        # Vorrang Warmwasser. S protocol only: no registryID of its own, so not read on I devices
+        "type": "binary_sensor",
+        "name": "dhw_priority",
+        "icon": "mdi:water-boiler",
+        "s": {
+            "registryID": 0x53,
+            "offset": 5
         },
     },
     {
@@ -742,8 +753,8 @@ async def to_code(config):
                 return [
                     entity,
                     name,
-                    conf.get("registryID"),
-                    conf.get("offset"),
+                    conf.get("registryID", 0),  # 0: no layout for this protocol (entity inactive)
+                    conf.get("offset", 0),
                     conf.get("signed", defaults["signed"]),
                     conf.get("dataSize", defaults["dataSize"]),
                     EndianLittle if conf.get("endian") == Endian.LITTLE else EndianBig,

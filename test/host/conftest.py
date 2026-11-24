@@ -2,8 +2,13 @@
 
 The firmware is built from hpsu_uart_host.yaml (ESPHome host platform). Its UART opens PTY_LINK,
 a symlink to a pseudo terminal whose other side is the simulated HPSU here: it answers each
-I-protocol request (03 40 <registry> <crc>) with the frame set for that registry. Each test
-starts a fresh process and talks to it through the native API like Home Assistant.
+request in its protocol with the frame set for that registry. Each test starts a fresh process
+and talks to it through the native API like Home Assistant.
+
+Protocols (ESPAltherma, doc/Daikin I protocol.md and doc/Daikin S protocol.md):
+- I: request 03 40 <registry> <crc>, response 40 <registry> <length> <payload> <crc>
+- S: request 02 <registry> <crc>, response <registry> <payload> <crc> with a fixed length per
+  registry (18 bytes, 6 for 0x50 and 0x56)
 
 Set HPSU_HOST_BINARY to use an already built program instead of compiling.
 """
@@ -45,6 +50,22 @@ def i_frame(registry: int, payload: bytes) -> bytes:
     return head + bytes([crc(head)])
 
 
+S_FRAME_LENGTH = {0x50: 6, 0x56: 6}  # all others 18
+
+
+def s_frame(registry: int, payload: bytes = b"") -> bytes:
+    """S-protocol response: <registry> <payload, zero padded to the fixed length> <crc>."""
+    size = S_FRAME_LENGTH.get(registry, 18) - 2
+    assert len(payload) <= size
+    head = bytes([registry]) + payload + bytes(size - len(payload))
+    return head + bytes([crc(head)])
+
+
+def u16_256(value: float) -> bytes:
+    """Unsigned little endian value in 1/256 (S protocol temperatures, e.g. 29.5 °C -> 7552)."""
+    return int(round(value * 256)).to_bytes(2, "little")
+
+
 def le16(value: float, divider: float = 10) -> bytes:
     """Signed little endian value as the HPSU sends it (e.g. 29.7 °C -> 297)."""
     return int(round(value * divider)).to_bytes(2, "little", signed=True)
@@ -73,11 +94,25 @@ def default_frames() -> dict[int, bytes]:
         0x30: i_frame(0x30, payload(12, o1=bytes([81]))),            # fan_speed (x10 rpm on ERGA08EAV3)
         0x60: i_frame(0x60, payload(13, o2=bytes([0x10]))),          # mode_of_operating: heating (high nibble)
         0x61: tv_tr(29.7, 26.7),
+        0x62: i_frame(0x62, payload(17, o8=bytes([0x04]))),          # circulation_pump: on (bit 2)
+    }
+
+
+def s_frames() -> dict[int, bytes]:
+    """A heating Rotex HPSU on the S protocol (layout of ESPAltherma PROTOCOL_S_ROTEX.h)."""
+    return {
+        0x53: s_frame(0x53, bytes([0x01])),                                     # circulation pump on
+        0x54: s_frame(0x54, payload(16, o2=u16_256(26.5), o4=u16_256(29.5))),  # tr, tv
+        0x55: s_frame(0x55, bytes([0x01])),                                     # operation mode: heating
     }
 
 
 class Hpsu:
-    """The simulated HPSU on the master side of the pseudo terminal."""
+    """The simulated HPSU on the master side of the pseudo terminal.
+
+    It speaks `protocol` ("I" or "S"). A request in the other protocol is answered with
+    `foreign_reply` (None: no answer; 15 EA is what a device sends for a request it does not know).
+    """
 
     def __init__(self) -> None:
         self.master, self.slave = os.openpty()
@@ -85,6 +120,9 @@ class Hpsu:
         if PTY_LINK.is_symlink() or PTY_LINK.exists():
             PTY_LINK.unlink()
         PTY_LINK.symlink_to(os.ttyname(self.slave))
+        self.protocol = "I"
+        self.foreign_reply: bytes | None = None
+        self.foreign_requests: list[bytes] = []  # requests in the other protocol
         self.frames = default_frames()   # registry -> response; missing registry: no answer
         self.split: dict[int, int] = {}  # registry -> bytes sent first, the rest on continue_split()
         self.requests: list[int] = []    # registries requested, in order
@@ -98,14 +136,25 @@ class Hpsu:
             self._rx += os.read(self.master, 256)
         except OSError:
             return
-        while len(self._rx) >= 4:
-            if self._rx[0] != 0x03 or self._rx[1] != 0x40:
-                del self._rx[0]  # not an I-protocol request (e.g. an S probe): skip
+        while self._rx:
+            if self._rx[0] == 0x03 and len(self._rx) >= 4 and self._rx[1] == 0x40:
+                request, self._rx = bytes(self._rx[:4]), self._rx[4:]
+                protocol, registry = "I", request[2]
+            elif self._rx[0] == 0x02 and len(self._rx) >= 3:
+                request, self._rx = bytes(self._rx[:3]), self._rx[3:]
+                protocol, registry = "S", request[1]
+            elif self._rx[0] in (0x02, 0x03):
+                break  # request not complete yet
+            else:
+                del self._rx[0]
                 continue
-            request, self._rx = bytes(self._rx[:4]), self._rx[4:]
-            if request[3] != crc(request[:3]):
+            if request[-1] != crc(request[:-1]):
                 continue
-            registry = request[2]
+            if protocol != self.protocol:
+                self.foreign_requests.append(request)
+                if self.foreign_reply is not None:
+                    os.write(self.master, self.foreign_reply)
+                continue
             self.requests.append(registry)
             self._answer(registry)
         self.changed.set()

@@ -31,12 +31,14 @@ On a network mount (sshfs, Samba) use a build folder on the local disk, e.g. `-B
 
 `test/host/` builds the whole component with the ESPHome host platform as a Linux program. Its
 UART opens `/tmp/hpsu-uart-pty`, a symlink to a pseudo terminal; on the other side `conftest.py`
-plays the HPSU: it answers each I-protocol request (`03 40 <registry> <crc>`) with the frame the
-test set for that registry, optionally in two parts or not at all.
+plays the HPSU: it answers each request with the frame the test set for that registry, optionally
+in two parts or not at all. It speaks the I protocol (`03 40 <registry> <crc>`) or the S protocol
+(`02 <registry> <crc>`, fixed response length); frames and the S layout follow ESPAltherma
+(`doc/Daikin S protocol.md`, `include/def/PROTOCOL_S_ROTEX.h`).
 
 The pytest tests talk to the program through the native API like Home Assistant and check the
 values, the log and the requests: values per registry, responses in parts, CRC errors, lost
-requests.
+requests (`test_uart.py`), protocol detection and the S protocol (`test_s_protocol.py`).
 
 ```sh
 python3 -m venv .venv && . .venv/bin/activate
