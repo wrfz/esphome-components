@@ -229,7 +229,8 @@ void TMessageManager::parseIResponse(std::string const& log_message) {
                 return;
             }
             const uint8_t header_size = 3;
-            std::string msg = log_message;
+            // the whole frame: since ESPHome 2025.10 it is read in parts, log_message is only the last one
+            std::string msg = Utils::to_hex(m_buffer.data(), 2 + length);
             for (auto& pEntity : m_messages) {
                 if (!pEntity->is_active()) {
                     continue;
@@ -254,12 +255,12 @@ void TMessageManager::parseIResponse(std::string const& log_message) {
         ESP_LOGD(TAG, "RX: incomplete buffer (%d of %d): %s", static_cast<int>(m_buffer.size()), static_cast<int>(2 + length), Utils::to_hex(m_buffer.data(), m_buffer.size()).c_str());
         return;
     }
-    ESP_LOGI(TAG, "RX: incomplete header: %s", log_message.c_str());
+    ESP_LOGD(TAG, "RX: incomplete header: %s", log_message.c_str());
 }
 
 void TMessageManager::parseSResponse(std::string const& log_message) {
     if (m_buffer.size() < 1) {
-        ESP_LOGI(TAG, "RX[S]: incomplete header: %s", log_message.c_str());
+        ESP_LOGD(TAG, "RX[S]: incomplete header: %s", log_message.c_str());
         return;
     }
 
@@ -279,7 +280,8 @@ void TMessageManager::parseSResponse(std::string const& log_message) {
     }
 
     const uint8_t header_size = 1;
-    std::string msg = log_message;
+    // the whole frame (read in parts, see parseIResponse)
+    std::string msg = Utils::to_hex(m_buffer.data(), frame_length);
     for (auto& pEntity : m_messages) {
         if (!pEntity->is_active()) {
             continue;
