@@ -1,4 +1,5 @@
 #include "esphome/components/daikin_rotex_uart/daikin_rotex_uart.h"
+#include "esphome/components/daikin_rotex_uart/manifest_action.h"
 #include "esphome/components/daikin_rotex_uart/scheduler.h"
 #include "esphome/components/daikin_rotex_uart/request.h"
 #include "esphome/components/daikin_rotex_uart/entity.h"
@@ -50,6 +51,16 @@ void DaikinRotexUARTComponent::add_base_entity(TEntity* pEntity) {
 }
 
 void DaikinRotexUARTComponent::setup() {
+#ifdef USE_DAIKIN_ROTEX_UART_MANIFEST
+    // Registered here, after the generated code has set up the YAML actions
+    // (initialize_user_services() replaces the list, register_user_service() appends).
+    if (!m_manifest_pages.empty() && api::global_api_server != nullptr) {
+        api::global_api_server->register_user_service(new ManifestAction(m_manifest_action_name, m_manifest_pages));
+        ESP_LOGI(TAG, "manifest action '%s' registered (%u page(s))",
+            m_manifest_action_name, static_cast<unsigned>(m_manifest_pages.size()));
+    }
+#endif
+
     if (m_protocol_from_config != TProtocol::AUTO) {
         TProtocolManager::getInstance().set_protocol(m_protocol_from_config);
     }

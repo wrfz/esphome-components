@@ -7,6 +7,7 @@
 #include "esphome/components/uart/uart.h"
 #include "esphome/core/component.h"
 #include <list>
+#include <vector>
 
 namespace esphome {
 
@@ -33,6 +34,8 @@ class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
     void set_thermal_power_sensor_raw(UartSensor* pSensor);
     void set_temperature_spread(UartSensor* pSensor);
     void set_temperature_spread_raw(UartSensor* pSensor);
+    void set_manifest_action_name(const char* action_name);
+    void add_manifest_page(const char* page);
 
     void add_entity(UartSensor* pEntity);
     void add_entity(UartBinarySensor* pEntity);
@@ -59,6 +62,8 @@ private:
     TProtocol m_protocol_from_config = TProtocol::AUTO;
 
     std::string m_project_git_hash;
+    const char* m_manifest_action_name = nullptr;
+    std::vector<const char*> m_manifest_pages;
 };
 
 inline void DaikinRotexUARTComponent::set_protocol_from_config(TProtocol protocol) {
@@ -87,6 +92,14 @@ inline void DaikinRotexUARTComponent::set_temperature_spread(UartSensor* pSensor
 
 inline void DaikinRotexUARTComponent::set_temperature_spread_raw(UartSensor* pSensor) {
     m_temperature_spread_raw_sensor = pSensor;
+}
+
+inline void DaikinRotexUARTComponent::set_manifest_action_name(const char* action_name) {
+    m_manifest_action_name = action_name;
+}
+
+inline void DaikinRotexUARTComponent::add_manifest_page(const char* page) {
+    m_manifest_pages.push_back(page);
 }
 
 } // namespace daikin_rotex_uart

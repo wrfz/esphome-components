@@ -2,6 +2,7 @@
 
 #include "esphome/core/entity_base.h"
 #include "esphome/components/daikin_rotex_uart/protocol.h"
+#include "esphome/components/daikin_rotex_uart/utils.h"
 #include <functional>
 #include <stdint.h>
 #include <variant>
@@ -100,7 +101,7 @@ public:
     }
 
     std::string getName() const {
-        return m_config.pEntity != nullptr ? m_config.pEntity->get_name().str() : "<INVALID>";
+        return m_config.pEntity != nullptr ? Utils::entity_name(*m_config.pEntity) : "<INVALID>";
     }
 
     std::string get_id() const;

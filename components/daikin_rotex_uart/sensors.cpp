@@ -36,7 +36,7 @@ bool UartSensor::handleValue(uint16_t value, TEntity::TVariant& current, TVarian
         publish_state(float_value);
     } else {
         ESP_LOGE(TAG, "UartSensor::handleValue() => Sensor<%s> value<%f> out of range[%f, %f]",
-            get_name().c_str(), float_value, m_range.min, m_range.max);
+            Utils::entity_name(*this).c_str(), float_value, m_range.min, m_range.max);
     }
 
     return valid;

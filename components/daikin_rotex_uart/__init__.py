@@ -13,6 +13,7 @@ from .translations.translate import (
     set_language,
     check_translations_integrity
 )
+from .manifest import ManifestBuilder, option_values, register_manifest
 
 from enum import Enum
 import subprocess
@@ -20,7 +21,7 @@ import logging
 import os
 
 CODEOWNERS = ["@wrfz"]
-AUTO_LOAD = ["binary_sensor", "sensor", "text_sensor"]
+AUTO_LOAD = ["binary_sensor", "json", "sensor", "text_sensor"]
 DEPENDENCIES = ["uart"]
 
 _LOGGER = logging.getLogger(__name__)
@@ -673,9 +674,15 @@ async def to_code(config):
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
 
+    manifest = ManifestBuilder()
+    manifest.language = config.get(CONF_LANGUAGE)
+    manifest.git = git_hash or None
+    manifest.protocol = config.get(CONF_PROTOCOL, "auto")
+
     if text_conf := config.get(CONF_PROJECT_GIT_HASH):
         t = await text_sensor.new_text_sensor(text_conf)
         cg.add(var.set_project_git_hash(t, git_hash))
+        manifest.add(CONF_PROJECT_GIT_HASH, "text_sensor", text_conf)
 
     if CONF_PROTOCOL in config:
         cg.add(var.set_protocol_from_config(cg.RawExpression(f"esphome::daikin_rotex_uart::TProtocol::{config[CONF_PROTOCOL]}")))
@@ -709,6 +716,13 @@ async def to_code(config):
                     case "text_sensor":
                         entity = await text_sensor.new_text_sensor(yaml_sensor_conf)
                 created_entities[name] = entity
+                # Manifest: once per entity; options per protocol (I: "values", S: "values_s")
+                manifest.add(
+                    name, sens_conf.get("type"), yaml_sensor_conf,
+                    unit=sens_conf.get("unit_of_measurement"),
+                    values=option_values(sens_conf.get("map", {})),
+                    values_s=option_values(sens_conf.get("s", {}).get("map", {})),
+                )
 
             async def handle_lambda(conf):
                 lamb = conf.get("handle_lambda", "return 0;")
@@ -774,4 +788,11 @@ async def to_code(config):
             sens = await sensor.new_sensor(yaml_sensor_conf)
             cg.add(sens.set_id(CONF_TEMPERATURE_SPREAD_RAW))
             cg.add(var.set_temperature_spread_raw(sens))
+
+        for key in (CONF_THERMAL_POWER, CONF_THERMAL_POWER_RAW, CONF_TEMPERATURE_SPREAD,
+                    CONF_TEMPERATURE_SPREAD_RAW):
+            if yaml_sensor_conf := entities.get(key):
+                manifest.add(key, "sensor", yaml_sensor_conf)
+
+    register_manifest(var, manifest)
 
