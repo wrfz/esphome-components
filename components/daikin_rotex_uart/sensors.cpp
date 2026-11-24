@@ -1,6 +1,7 @@
 #include "esphome/components/daikin_rotex_uart/sensors.h"
 #include "esphome/components/daikin_rotex_uart/entity.h"
 #include "esphome/core/hal.h"
+#include <cmath>
 
 namespace esphome {
 namespace daikin_rotex_uart {
@@ -45,8 +46,10 @@ bool UartSensor::handleValue(uint16_t value, TEntity::TVariant& current, TVarian
 void UartSensor::update(uint32_t millis) {
     TEntity::update(millis);
 
-    if (m_smooth) {
-        const float dt = (static_cast<float>(esphome::millis()) - m_pid.get_last_update()) / 1000.0f; // seconds
+    // nothing to smooth before the first value; compute() would not advance its time stamp and
+    // this would publish NaN in every loop
+    if (m_smooth && !std::isnan(m_state)) {
+        const float dt = Utils::millis_since(m_pid.get_last_update()) / 1000.0f; // seconds
         if (dt > 10.0f) {
             if (std::isnan(m_smooth_state)) {
                 m_smooth_state = m_state;
@@ -56,7 +59,8 @@ void UartSensor::update(uint32_t millis) {
             m_smooth_state += m_pid.compute(m_state, m_smooth_state, dt, logstr);
             //ESP_LOGI(TAG, "update() PID %s: %s, val: %f", get_id().c_str(), logstr.c_str(), m_smooth_state);
 
-            m_smooth_state = std::ceil(m_smooth_state * 100.0) / 100.0;
+            // round to 0.01 (ceil shifted the value up a little with every step, fed back into the PID)
+            m_smooth_state = std::round(m_smooth_state * 100.0) / 100.0;
 
             publish_state(m_smooth_state);
         }

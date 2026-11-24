@@ -12,6 +12,7 @@ TRequest::TRequest(TProtocol protocol, uint8_t registryID)
 , m_registryID(registryID)
 , m_last_request_timestamp(0u)
 , m_last_response_timestamp(0u)
+, m_waiting(false)
 {
 }
 
@@ -51,24 +52,24 @@ bool TRequest::send(uart::UARTDevice& device) {
     sendFrame(device, m_protocol, m_registryID);
 
     m_last_request_timestamp = millis();
+    m_waiting = true;
 
     return true;
 }
 
 void TRequest::setHandled() {
     m_last_response_timestamp = millis();
+    m_waiting = false;
 }
 
 bool TRequest::isInProgress() const {
-    uint32_t mil = millis();
-    return m_last_request_timestamp > m_last_response_timestamp && ((mil - m_last_request_timestamp) < 3*1000); // Consider 3 sek => package is lost
+    return m_waiting && Utils::millis_since(m_last_request_timestamp) < 3 * 1000;  // after 3 s the response is lost
 }
 
 bool TRequest::isRequestRequired() const {
-    uint32_t mil = millis();
-    uint32_t timeout = 5000u;
+    const uint32_t timeout = 5000u;
 
-    return !isInProgress() && (mil > (m_last_response_timestamp + timeout));
+    return !isInProgress() && Utils::millis_since(m_last_response_timestamp) > timeout;
 }
 
 } // namespace daikin_rotex_uart

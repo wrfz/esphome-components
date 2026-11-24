@@ -1,7 +1,11 @@
 # Tests
 
-Unit tests (GoogleTest) for the helper classes of `daikin_rotex_uart`, run without hardware,
-locally and in GitHub Actions (`.github/workflows/test.yml`):
+Two kinds of tests, both run without hardware, locally and in GitHub Actions
+(`.github/workflows/test.yml`).
+
+## Unit tests (GoogleTest)
+
+Helper classes of `daikin_rotex_uart`:
 
 - `BidiMap`, `Utils`, `PID`, `Scheduler`, `UnitConverter`
 - `TRequest`: CRC, request frames (I and S protocol), in progress / lost / next request
@@ -22,3 +26,32 @@ ctest --test-dir build --output-on-failure
 ```
 
 On a network mount (sshfs, Samba) use a build folder on the local disk, e.g. `-B /tmp/hpsu-uart-unit-build`.
+
+## Host tests (simulated HPSU)
+
+`test/host/` builds the whole component with the ESPHome host platform as a Linux program. Its
+UART opens `/tmp/hpsu-uart-pty`, a symlink to a pseudo terminal; on the other side `conftest.py`
+plays the HPSU: it answers each I-protocol request (`03 40 <registry> <crc>`) with the frame the
+test set for that registry, optionally in two parts or not at all.
+
+The pytest tests talk to the program through the native API like Home Assistant and check the
+values, the log and the requests: values per registry, responses in parts, CRC errors, lost
+requests.
+
+```sh
+python3 -m venv .venv && . .venv/bin/activate
+pip install esphome==2026.11.0 pytest pytest-asyncio
+cd test/host
+pytest
+```
+
+`pytest` must be the one from the venv (the system pytest has no `aioesphomeapi`). The first run
+compiles the program, later runs reuse the build. On a network mount put the build on the local
+disk and keep Python from writing bytecode next to the sources:
+
+```sh
+export ESPHOME_DATA_DIR=/tmp/hpsu-uart-build PYTHONDONTWRITEBYTECODE=1
+pytest
+```
+
+To skip compiling: `HPSU_HOST_BINARY=<path to program> pytest`.

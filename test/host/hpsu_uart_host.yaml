@@ -1,0 +1,52 @@
+# Host build of the component against a simulated HPSU: the pytest tests (conftest.py) open a
+# pseudo terminal, link it to the port below and answer the requests like the HPSU.
+esphome:
+  name: hpsu-uart-host
+
+host:
+
+external_components:
+  - source:
+      type: local
+      path: ../../components
+    components: [daikin_rotex_uart]
+
+logger:
+  level: DEBUG    # the tests wait for "incomplete buffer" (debug) when sending a response in parts
+
+api:
+  port: 16054
+  reboot_timeout: 0s
+
+uart:
+  id: uart_bus
+  port: /tmp/hpsu-uart-pty   # symlink to the pseudo terminal, created by conftest.py
+  baud_rate: 9600
+  data_bits: 8
+  parity: EVEN
+  stop_bits: 1
+
+daikin_rotex_uart:
+  id: rotex_uart
+  uart_id: uart_bus
+  outdoor_unit: ERGA08EAV3
+  language: de
+  project_git_hash:
+    name: Project Git Hash
+  entities:
+    tgt_evap_temp:
+      name: Ziel-Verdampfungstemperatur
+    outdoor_temp:
+      name: Aussentemperatur
+    inv_prim_current:
+      name: INV Primary Current
+    fan_speed:
+      name: Ventilatordrehzahl
+    mode_of_operating:
+      name: Betriebsart
+    tv:
+      name: TV
+    tr:
+      name: TR
+    temperature_spread:
+      name: Spreizung

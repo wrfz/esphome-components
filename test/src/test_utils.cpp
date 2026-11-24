@@ -1,4 +1,5 @@
 #include "esphome/components/daikin_rotex_uart/utils.h"
+#include "mock_esphome.h"
 #include <gtest/gtest.h>
 
 #include <array>
@@ -56,4 +57,11 @@ TEST(UtilsTest, format) {
 TEST(UtilsTest, equals) {
     EXPECT_TRUE(Utils::equals(1.0f, 1.05f, 0.1f));
     EXPECT_FALSE(Utils::equals(1.0f, 1.2f, 0.1f));
+}
+
+TEST(UtilsTest, millis_since_across_overflow) {
+    esphome::mock::set_millis(5);
+    EXPECT_EQ(15u, Utils::millis_since(UINT32_MAX - 9));
+    EXPECT_EQ(0u, Utils::millis_since(5));
+    esphome::mock::set_millis(std::nullopt);
 }

@@ -90,3 +90,33 @@ TEST_F(RequestStateTest, next_request_5_seconds_after_response) {
     esphome::mock::set_millis(15001);
     EXPECT_TRUE(request.isRequestRequired());
 }
+
+TEST_F(RequestStateTest, across_millis_overflow) {
+    // request shortly before the overflow after 49.7 days, response after it
+    FakeUart uart;
+    FakeDevice device(&uart);
+    TRequest request(TProtocol::I, 0x10);
+
+    esphome::mock::set_millis(UINT32_MAX - 99);
+    request.send(device);
+    esphome::mock::set_millis(100);       // 200 ms later
+    EXPECT_TRUE(request.isInProgress());
+    request.setHandled();
+    EXPECT_FALSE(request.isInProgress());
+
+    esphome::mock::set_millis(5100);
+    EXPECT_FALSE(request.isRequestRequired());
+    esphome::mock::set_millis(5101);      // 5 s after the response
+    EXPECT_TRUE(request.isRequestRequired());
+}
+
+TEST_F(RequestStateTest, lost_across_millis_overflow) {
+    FakeUart uart;
+    FakeDevice device(&uart);
+    TRequest request(TProtocol::I, 0x10);
+
+    esphome::mock::set_millis(UINT32_MAX - 99);
+    request.send(device);
+    esphome::mock::set_millis(2900);      // 3 s later
+    EXPECT_FALSE(request.isInProgress());
+}

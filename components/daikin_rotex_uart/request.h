@@ -31,6 +31,7 @@ private:
     uint8_t m_registryID;
     uint32_t m_last_request_timestamp;
     uint32_t m_last_response_timestamp;
+    bool m_waiting;  // sent, no response yet (timestamps cannot tell across the millis() overflow)
 };
 
 inline uint8_t TRequest::getRegistryId() const {

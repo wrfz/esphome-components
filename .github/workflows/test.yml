@@ -33,3 +33,26 @@ jobs:
 
       - name: Run
         run: ctest --test-dir test/build --output-on-failure
+
+  host:
+    name: Host tests (simulated HPSU)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install ESPHome and pytest
+        run: python3 -m pip install esphome==${{ env.ESPHOME_VERSION }} pytest pytest-asyncio
+
+      - name: Cache PlatformIO
+        uses: actions/cache@v5
+        with:
+          path: ~/.platformio
+          key: platformio-host-${{ env.ESPHOME_VERSION }}
+
+      - name: Run
+        working-directory: test/host
+        run: pytest -v

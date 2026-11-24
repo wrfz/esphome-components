@@ -21,6 +21,7 @@ protected:
     }
 
     int calls = 0;
+    CallHandle other;
 };
 
 TEST_F(SchedulerTest, call_later_returns_valid_handle) {
@@ -71,4 +72,58 @@ TEST_F(SchedulerTest, due_across_millis_overflow) {
     esphome::mock::set_millis(50);
     Scheduler::getInstance().update();
     EXPECT_EQ(1, calls);
+}
+
+TEST_F(SchedulerTest, call_may_cancel_another_due_call) {
+    auto& scheduler = Scheduler::getInstance();
+
+    scheduler.call_later([this]() {
+        ++calls;
+        other.cancel();
+    });
+    other = later(0);
+
+    scheduler.update();
+    // both were due: the second is run as well (it was taken out before the first ran)
+    EXPECT_EQ(2, calls);
+    EXPECT_FALSE(other.is_valid());
+}
+
+TEST_F(SchedulerTest, call_may_cancel_a_pending_call) {
+    auto& scheduler = Scheduler::getInstance();
+
+    other = later(100);
+    scheduler.call_later([this]() { other.cancel(); });
+
+    scheduler.update();
+    esphome::mock::set_millis(1100);
+    scheduler.update();
+    EXPECT_EQ(0, calls);
+}
+
+TEST_F(SchedulerTest, call_may_cancel_itself) {
+    auto& scheduler = Scheduler::getInstance();
+
+    other = scheduler.call_later([this]() {
+        ++calls;
+        EXPECT_FALSE(other.cancel());  // already taken out: nothing to cancel
+    });
+
+    scheduler.update();
+    scheduler.update();
+    EXPECT_EQ(1, calls);
+}
+
+TEST_F(SchedulerTest, call_may_add_a_call) {
+    auto& scheduler = Scheduler::getInstance();
+
+    scheduler.call_later([this]() {
+        ++calls;
+        later(0);
+    });
+
+    scheduler.update();
+    EXPECT_EQ(1, calls);  // the added call runs with the next update
+    scheduler.update();
+    EXPECT_EQ(2, calls);
 }

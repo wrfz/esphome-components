@@ -239,7 +239,7 @@ void TMessageManager::parseIResponse(std::string const& log_message) {
                     uint8_t* input = m_buffer.data().data();
                     const uint8_t message_offset = header_size + pEntity->getOffset();
                     if (message_offset < 3 || (message_offset + pEntity->getDataSize()) > m_buffer.size()) {
-                        ESP_LOGE(TAG, "RX: Invalid offset! message_offset: %d, message.data_size: %d, buffer.size: %d", message_offset, pEntity->getDataSize(), m_buffer.size());
+                        ESP_LOGE(TAG, "RX: Invalid offset! message_offset: %d, message.data_size: %d, buffer.size: %d", message_offset, pEntity->getDataSize(), static_cast<int>(m_buffer.size()));
                         return;
                     }
                     input += message_offset;
@@ -306,7 +306,7 @@ std::shared_ptr<TRequest> TMessageManager::getNextRequestToSend() {
     const uint32_t timestamp = millis();
     static uint32_t last_dump_timestamp = 0;
 
-    if (timestamp > (last_dump_timestamp + 1000)) {
+    if (timestamp - last_dump_timestamp > 1000) {
         last_dump_timestamp = timestamp;
         dumpRequests();
     }
@@ -358,7 +358,7 @@ void TMessageManager::dumpRequests() {
             first = false;
         }
     }
-    ESP_LOGI(TAG, "count: %d, %s", m_messages.size(), dump.c_str());
+    ESP_LOGI(TAG, "count: %d, %s", static_cast<int>(m_messages.size()), dump.c_str());
 }
 
 } // namespace daikin_rotex_uart
