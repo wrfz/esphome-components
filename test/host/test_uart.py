@@ -134,3 +134,34 @@ async def test_outdoor_equipment(device):
         "outdoor_expansion_valves": "1.0", "outdoor_4_way_valves": "1.0", "outdoor_crankcase_heaters": "0.0",
         "outdoor_solenoid_valves": "2.0", "indoor_units_max": "1.0",
     }
+
+
+# 0x60, 0x10 and 0x20 of a Rotex HPSU
+HEATING_0X60 = bytes.fromhex("40 60 12 80 00 18 00 40 3E 3C EA 01 4A 01 E0 86 05 03 00 57")
+HOT_WATER_0X60 = bytes.fromhex("40 60 12 80 00 48 00 40 3E 3C EA 01 E0 01 E0 C6 05 03 00 51")
+STANDBY_0X60 = bytes.fromhex("40 60 12 80 00 00 00 40 3E 3C FA 00 4A 01 20 84 05 03 00 22")
+STARTUP_0X10 = bytes.fromhex("40 10 12 01 20 00 00 00 00 70 03 00 00 00 00 00 00 00 00 09")
+REAL_0X20 = bytes.fromhex("40 20 13 DD FF 00 00 53 02 00 00 BF FF 00 00 46 00 BF 00 00 98")
+
+
+async def test_indoor_unit_states(device):
+    device.hpsu.frames[0x60] = HEATING_0X60
+    await device.wait_state("supply_setpoint", "33.0")
+    assert {k: device.states[k] for k in ("dhw_setpoint", "thermostat", "flow_switch", "water_pump", "3_way_valve")} == {
+        "dhw_setpoint": "49.0", "thermostat": "True", "flow_switch": "True", "water_pump": "True", "3_way_valve": "Heizen"}
+
+    device.hpsu.frames[0x60] = HOT_WATER_0X60
+    await device.wait_state("3_way_valve", "Warmwasserbereitung")
+    assert device.states["supply_setpoint"] == "48.0"
+
+    device.hpsu.frames[0x60] = STANDBY_0X60
+    await device.wait_state("water_pump", "False")
+    assert {k: device.states[k] for k in ("dhw_setpoint", "thermostat", "flow_switch")} == {
+        "dhw_setpoint": "25.0", "thermostat": "False", "flow_switch": "False"}
+
+
+async def test_outdoor_unit_states(device):
+    device.hpsu.frames[0x10] = STARTUP_0X10
+    device.hpsu.frames[0x20] = REAL_0X20
+    await device.wait_state("startup_control", "True")
+    await device.wait_state("heat_sink_temp", "7.0")

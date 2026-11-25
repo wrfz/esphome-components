@@ -164,6 +164,22 @@ daikin_rotex_uart:
       name: Heating Rod Storage
     press_eq:
       name: Pressure Equalization
+    heat_sink_temp:
+      name: Heat Sink Temperature
+    startup_control:
+      name: Startup Control
+    thermostat:
+      name: Thermostat
+    dhw_setpoint:
+      name: DHW Setpoint
+    supply_setpoint:
+      name: Supply Setpoint
+    flow_switch:
+      name: Flow Switch
+    water_pump:
+      name: Water Pump
+    3_way_valve:
+      name: 3-Way Valve
     4_way_valve:
       name: 4-Way Valve
     defrost_operation:

@@ -62,6 +62,22 @@ daikin_rotex_uart:
       name: Ventilatordrehzahl
     inv_freq:
       name: Kompressor Drehzahl
+    heat_sink_temp:
+      name: heat_sink_temp
+    startup_control:
+      name: startup_control
+    thermostat:
+      name: thermostat
+    dhw_setpoint:
+      name: dhw_setpoint
+    supply_setpoint:
+      name: supply_setpoint
+    flow_switch:
+      name: flow_switch
+    water_pump:
+      name: water_pump
+    3_way_valve:
+      name: 3_way_valve
     4_way_valve:
       name: 4-Wege-Ventil
     voltage:

@@ -164,6 +164,22 @@ daikin_rotex_uart:
       name: Heizstab Speicher
     press_eq:
       name: Druckausgleich
+    heat_sink_temp:
+      name: Temperatur Kühlkörper
+    startup_control:
+      name: Anlaufsteuerung
+    thermostat:
+      name: Thermostat
+    dhw_setpoint:
+      name: Warmwasser Soll
+    supply_setpoint:
+      name: Vorlauf Soll
+    flow_switch:
+      name: Strömungsschalter
+    water_pump:
+      name: Wasserpumpe
+    3_way_valve:
+      name: 3-Wege-Ventil
     4_way_valve:
       name: 4-Wege-Ventil
     defrost_operation:

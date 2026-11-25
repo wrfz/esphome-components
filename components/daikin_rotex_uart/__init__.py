@@ -484,6 +484,111 @@ sensor_configuration = [
         },
     },
     {
+        # Heat sink temperature of the inverter, registry 0x20 bytes 12-13
+        "type": "sensor",
+        "name": "heat_sink_temp",
+        "registryID": 0x20,
+        "offset": 12,
+        "signed": True,
+        "dataSize": 2,
+        "endian": Endian.LITTLE,
+        "divider": 10,
+        "device_class": DEVICE_CLASS_TEMPERATURE,
+        "unit_of_measurement": UNIT_CELSIUS,
+        "accuracy_decimals": 1,
+        "state_class": STATE_CLASS_MEASUREMENT
+    },
+    {
+        # Startup control of the outdoor unit after a compressor start, registry 0x10 byte 1 bit 5
+        "type": "binary_sensor",
+        "name": "startup_control",
+        "registryID": 0x10,
+        "offset": 1,
+        "handle_lambda": """
+            return (data[0] & 0x20) > 0;
+        """,
+        "icon": "mdi:play-circle-outline"
+    },
+    {
+        # Request of the indoor unit (thermostat on), registry 0x60 byte 2 bit 3
+        "type": "binary_sensor",
+        "name": "thermostat",
+        "registryID": 0x60,
+        "offset": 2,
+        "handle_lambda": """
+            return (data[0] & 0x08) > 0;
+        """,
+        "icon": "mdi:thermostat"
+    },
+    {
+        # DHW setpoint the indoor unit passes to the outdoor unit, registry 0x60 bytes 7-8 (minimum while
+        # hot water is blocked)
+        "type": "sensor",
+        "name": "dhw_setpoint",
+        "registryID": 0x60,
+        "offset": 7,
+        "signed": True,
+        "dataSize": 2,
+        "endian": Endian.LITTLE,
+        "divider": 10,
+        "device_class": DEVICE_CLASS_TEMPERATURE,
+        "unit_of_measurement": UNIT_CELSIUS,
+        "accuracy_decimals": 1,
+        "state_class": STATE_CLASS_MEASUREMENT
+    },
+    {
+        # Leaving water setpoint, registry 0x60 bytes 9-10: heating, defrosting and hot water each have their own
+        "type": "sensor",
+        "name": "supply_setpoint",
+        "registryID": 0x60,
+        "offset": 9,
+        "signed": True,
+        "dataSize": 2,
+        "endian": Endian.LITTLE,
+        "divider": 10,
+        "device_class": DEVICE_CLASS_TEMPERATURE,
+        "unit_of_measurement": UNIT_CELSIUS,
+        "accuracy_decimals": 1,
+        "state_class": STATE_CLASS_MEASUREMENT
+    },
+    {
+        # Water flow switch, registry 0x60 byte 11 bit 7: off shortly after the water pump stops
+        "type": "binary_sensor",
+        "name": "flow_switch",
+        "registryID": 0x60,
+        "offset": 11,
+        "handle_lambda": """
+            return (data[0] & 0x80) > 0;
+        """,
+        "icon": "mdi:water-check-outline"
+    },
+    {
+        # Water pump of the indoor unit, registry 0x60 byte 12 bit 1
+        "type": "binary_sensor",
+        "name": "water_pump",
+        "registryID": 0x60,
+        "offset": 12,
+        "handle_lambda": """
+            return (data[0] & 0x02) > 0;
+        """,
+        "icon": "mdi:pump"
+    },
+    {
+        # Position of the 3-way valve, registry 0x60 byte 12 bit 6: hot water or space heating
+        "type": "text_sensor",
+        "name": "3_way_valve",
+        "registryID": 0x60,
+        "offset": 12,
+        "map": {
+            0x00: delayed_translate("heating"),
+            0x01: delayed_translate("hot_water"),
+        },
+        "handle_lambda": """
+            return (data[0] & 0x40) ? 1 : 0;
+        """,
+        "icon": "mdi:valve"
+    },
+    {
         "type": "binary_sensor",
         "name": "buh1",
         "registryID": 0x60,

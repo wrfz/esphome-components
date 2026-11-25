@@ -164,6 +164,22 @@ daikin_rotex_uart:
       name: Resistenza di riscaldamento accumulo
     press_eq:
       name: Equalizzatore di pressione
+    heat_sink_temp:
+      name: Temperatura Dissipatore
+    startup_control:
+      name: Controllo Avviamento
+    thermostat:
+      name: Termostato
+    dhw_setpoint:
+      name: Setpoint Acqua Calda
+    supply_setpoint:
+      name: Setpoint Mandata
+    flow_switch:
+      name: Flussostato
+    water_pump:
+      name: Pompa Acqua
+    3_way_valve:
+      name: Valvola a 3 Vie
     4_way_valve:
       name: Valvola a 4 vie
     defrost_operation:
