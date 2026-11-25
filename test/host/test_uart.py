@@ -2,7 +2,7 @@
 
 import pytest
 
-from conftest import UNKNOWN, i_frame, payload, tv_tr
+from conftest import UNKNOWN, i_frame, le16, payload, tv_tr
 
 pytestmark = pytest.mark.asyncio
 
@@ -158,6 +158,43 @@ async def test_indoor_unit_states(device):
     await device.wait_state("water_pump", "False")
     assert {k: device.states[k] for k in ("dhw_setpoint", "thermostat", "flow_switch")} == {
         "dhw_setpoint": "25.0", "thermostat": "False", "flow_switch": "False"}
+
+
+def refrigerant_0x20(discharge: float, pressure_bar_g: float) -> bytes:
+    """0x20 with outdoor 1.5 °C, discharge temperature (offset 4) and pressure in bar(g) (offset 14)."""
+    return i_frame(0x20, payload(17, o0=le16(1.5), o4=le16(discharge), o14=le16(pressure_bar_g)))
+
+
+def liquid_0x61(t_liq: float) -> bytes:
+    """0x61 with Tv 29.7 °C, liquid temperature at the condenser outlet (offset 6), Tr 26.7 °C."""
+    return i_frame(0x61, payload(12, o2=le16(29.7), o6=le16(t_liq), o8=le16(26.7)))
+
+
+STANDSTILL_0X30 = i_frame(0x30, bytes.fromhex("00 50 00 D1 01 00 00 80 00 00 00"))  # compressor 0, 4-way valve heating
+
+
+async def test_subcooling_and_superheat(device):
+    # heating, compressor running: 18.0 bar(g) -> 30.2 °C saturation
+    device.hpsu.frames[0x20] = refrigerant_0x20(discharge=62.0, pressure_bar_g=18.0)
+    device.hpsu.frames[0x61] = liquid_0x61(29.7)
+    device.hpsu.frames[0x30] = REAL_0X30_HEATING
+    await device.wait_state("Kaeltemitteltemperatur", "30.2")
+    await device.wait_state("Unterkuehlung", "0.5")   # 30.2 - 29.7
+    await device.wait_state("Ueberhitzung", "31.8")   # 62.0 - 30.2
+
+    # defrost: 4-way valve reversed, the pressure sensor is on the suction side -> no value
+    device.hpsu.frames[0x30] = REAL_0X30_DEFROST
+    await device.wait_state("Unterkuehlung", UNKNOWN)
+    await device.wait_state("Ueberhitzung", UNKNOWN)
+
+    device.hpsu.frames[0x30] = REAL_0X30_HEATING
+    await device.wait_state("Unterkuehlung", "0.5")
+
+    # compressor stopped -> no value
+    device.hpsu.frames[0x30] = STANDSTILL_0X30
+    await device.wait_state("Kompressor Drehzahl", "0.0")
+    await device.wait_state("Unterkuehlung", UNKNOWN)
+    await device.wait_state("Ueberhitzung", UNKNOWN)
 
 
 async def test_outdoor_unit_states(device):

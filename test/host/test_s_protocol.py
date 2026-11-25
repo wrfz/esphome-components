@@ -44,7 +44,8 @@ async def test_values_reach_home_assistant(start_device, s_hpsu):
     await device.wait_state("Spreizung", "3.0")
     assert device.states["TV"] == "29.5"
     assert device.states["TR"] == "26.5"
-    assert device.states["Betriebsart"] == "Heizen"
+    # 0x55 is a separate response: its value may arrive after the spread
+    await device.wait_state("Betriebsart", "Heizen")
 
 
 async def test_circulation_pump(start_device, s_hpsu):

@@ -96,3 +96,13 @@ daikin_rotex_uart:
       name: Vorrang Warmwasser
     temperature_spread:
       name: Spreizung
+    t_liq:
+      name: Fluessigkeitsleitung
+    t_liq2:
+      name: Kaeltemitteltemperatur
+    temp_after_compr:
+      name: Heissgas
+    subcooling:
+      name: Unterkuehlung
+    discharge_superheat:
+      name: Ueberhitzung

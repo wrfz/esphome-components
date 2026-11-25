@@ -189,6 +189,10 @@ daikin_rotex_uart:
       name: Delta Temperatura
     temperature_spread_raw:
       name: Delta Temperatura Raw
+    subcooling:
+      name: Sottoraffreddamento
+    discharge_superheat:
+      name: Surriscaldamento mandata
 
     #########################################################
     #   Sensori aggiuntivi per dispositivi Daikin / ECH2O   #

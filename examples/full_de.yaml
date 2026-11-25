@@ -189,6 +189,10 @@ daikin_rotex_uart:
       name: Spreizung
     temperature_spread_raw:
       name: Spreizung Raw
+    subcooling:
+      name: Unterkühlung
+    discharge_superheat:
+      name: Überhitzung Heißgas
 
     ######################################################
     #   Zusätzliche Sensoren für Daikin / ECH2O Geräte   #

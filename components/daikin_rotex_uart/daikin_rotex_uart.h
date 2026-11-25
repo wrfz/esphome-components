@@ -34,6 +34,8 @@ class DaikinRotexUARTComponent: public Component, public uart::UARTDevice {
     void set_thermal_power_sensor_raw(UartSensor* pSensor);
     void set_temperature_spread(UartSensor* pSensor);
     void set_temperature_spread_raw(UartSensor* pSensor);
+    void set_subcooling(UartSensor* pSensor);
+    void set_discharge_superheat(UartSensor* pSensor);
     void set_manifest_action_name(const char* action_name);
     void add_manifest_page(const char* page);
 
@@ -50,6 +52,8 @@ private:
 
     void update_thermal_power();
     void update_temperature_spread();
+    void update_refrigerant_circuit();
+    bool heating_with_compressor() const;
 
     TMessageManager m_message_manager;
     text_sensor::TextSensor* m_project_git_hash_sensor;
@@ -58,6 +62,8 @@ private:
     UartSensor* m_thermal_power_raw_sensor;
     UartSensor* m_temperature_spread_sensor;
     UartSensor* m_temperature_spread_raw_sensor;
+    UartSensor* m_subcooling_sensor;
+    UartSensor* m_discharge_superheat_sensor;
 
     TProtocol m_protocol_from_config = TProtocol::AUTO;
 
@@ -92,6 +98,14 @@ inline void DaikinRotexUARTComponent::set_temperature_spread(UartSensor* pSensor
 
 inline void DaikinRotexUARTComponent::set_temperature_spread_raw(UartSensor* pSensor) {
     m_temperature_spread_raw_sensor = pSensor;
+}
+
+inline void DaikinRotexUARTComponent::set_subcooling(UartSensor* pSensor) {
+    m_subcooling_sensor = pSensor;
+}
+
+inline void DaikinRotexUARTComponent::set_discharge_superheat(UartSensor* pSensor) {
+    m_discharge_superheat_sensor = pSensor;
 }
 
 inline void DaikinRotexUARTComponent::set_manifest_action_name(const char* action_name) {

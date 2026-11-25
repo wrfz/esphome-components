@@ -302,6 +302,7 @@ sensor_configuration = [
     {
         "type": "sensor",
         "name": "temp_after_compr",
+        "update_entities": ["refrigerant_circuit"],
         "registryID": 0x20,
         "offset": 4,
         "signed": True,
@@ -359,6 +360,7 @@ sensor_configuration = [
     {
         "type": "sensor",
         "name": "t_liq2",
+        "update_entities": ["refrigerant_circuit"],
         "registryID": 0x20,
         "offset": 14,
         "signed": True,
@@ -421,6 +423,7 @@ sensor_configuration = [
     {
         "type": "sensor",
         "name": "inv_freq",
+        "update_entities": ["refrigerant_circuit"],
         "registryID": 0x30,
         "offset": 0,
         "signed": False,
@@ -457,6 +460,7 @@ sensor_configuration = [
     {
         "type": "text_sensor",
         "name": "4_way_valve",
+        "update_entities": ["refrigerant_circuit"],
         "registryID": 0x30,
         "offset": 7,
         "map": {
@@ -663,6 +667,7 @@ sensor_configuration = [
     {
         "type": "sensor",
         "name": "t_liq",
+        "update_entities": ["refrigerant_circuit"],
         "registryID": 0x61,
         "offset": 6,
         "signed": True,
@@ -801,6 +806,8 @@ CONF_THERMAL_POWER = "thermal_power"
 CONF_THERMAL_POWER_RAW = "thermal_power_raw"
 CONF_TEMPERATURE_SPREAD = "temperature_spread"
 CONF_TEMPERATURE_SPREAD_RAW = "temperature_spread_raw"
+CONF_SUBCOOLING = "subcooling"
+CONF_DISCHARGE_SUPERHEAT = "discharge_superheat"
 
 
 entity_schemas = {}
@@ -871,6 +878,23 @@ entity_schemas.update({
         state_class=STATE_CLASS_MEASUREMENT,
         icon="mdi:thermometer-lines"
     ).extend(),
+    # Temperature differences in K, without device class: Home Assistant would convert K like an
+    # absolute temperature. Needs t_liq2 and t_liq (subcooling) or t_liq2 and temp_after_compr (superheat);
+    # with inv_freq and 4_way_valve configured, only heating with running compressor gives a value.
+    cv.Optional(CONF_SUBCOOLING): sensor.sensor_schema(
+        UartSensor,
+        unit_of_measurement=UNIT_KELVIN,
+        accuracy_decimals=1,
+        state_class=STATE_CLASS_MEASUREMENT,
+        icon="mdi:thermometer-minus"
+    ),
+    cv.Optional(CONF_DISCHARGE_SUPERHEAT): sensor.sensor_schema(
+        UartSensor,
+        unit_of_measurement=UNIT_KELVIN,
+        accuracy_decimals=1,
+        state_class=STATE_CLASS_MEASUREMENT,
+        icon="mdi:thermometer-plus"
+    ),
 })
 
 CONFIG_SCHEMA = cv.Schema(
@@ -1030,9 +1054,17 @@ async def to_code(config):
             sens = await sensor.new_sensor(yaml_sensor_conf)
             cg.add(sens.set_id(CONF_TEMPERATURE_SPREAD_RAW))
             cg.add(var.set_temperature_spread_raw(sens))
+        if yaml_sensor_conf := entities.get(CONF_SUBCOOLING):
+            sens = await sensor.new_sensor(yaml_sensor_conf)
+            cg.add(sens.set_id(CONF_SUBCOOLING))
+            cg.add(var.set_subcooling(sens))
+        if yaml_sensor_conf := entities.get(CONF_DISCHARGE_SUPERHEAT):
+            sens = await sensor.new_sensor(yaml_sensor_conf)
+            cg.add(sens.set_id(CONF_DISCHARGE_SUPERHEAT))
+            cg.add(var.set_discharge_superheat(sens))
 
         for key in (CONF_THERMAL_POWER, CONF_THERMAL_POWER_RAW, CONF_TEMPERATURE_SPREAD,
-                    CONF_TEMPERATURE_SPREAD_RAW):
+                    CONF_TEMPERATURE_SPREAD_RAW, CONF_SUBCOOLING, CONF_DISCHARGE_SUPERHEAT):
             if yaml_sensor_conf := entities.get(key):
                 manifest.add(key, "sensor", yaml_sensor_conf)
 

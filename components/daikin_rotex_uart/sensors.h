@@ -52,6 +52,12 @@ public:
         m_map_s = Utils::str_to_map(str_map);
         m_has_map_s = true;
     }
+    /// True if the current state is the text mapped to `key` (independent of the language).
+    bool is_state_of(uint16_t key) const {
+        BidiMap const& map = active_map();
+        const auto it = map.findByKey(key);
+        return it != map.end() && it->second == state;
+    }
 protected:
     virtual bool handleValue(uint16_t value, TVariant& current, TVariant& previous) override;
 private:

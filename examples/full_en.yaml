@@ -189,6 +189,10 @@ daikin_rotex_uart:
       name: Temperature Spread
     temperature_spread_raw:
       name: Temperature Spread Raw
+    subcooling:
+      name: Subcooling
+    discharge_superheat:
+      name: Discharge Superheat
 
     #####################################################
     #   Additional sensors for Daikin / ECH2O devices   #
