@@ -34,6 +34,24 @@ daikin_rotex_uart:
   project_git_hash:
     name: Project Git Hash
   entities:
+    outdoor_inv_compressors:
+      name: outdoor_inv_compressors
+    outdoor_std_compressors:
+      name: outdoor_std_compressors
+    outdoor_fans:
+      name: outdoor_fans
+    outdoor_expansion_valves:
+      name: outdoor_expansion_valves
+    outdoor_4_way_valves:
+      name: outdoor_4_way_valves
+    outdoor_crankcase_heaters:
+      name: outdoor_crankcase_heaters
+    outdoor_solenoid_valves:
+      name: outdoor_solenoid_valves
+    indoor_units_max:
+      name: indoor_units_max
+    indoor_units_connected:
+      name: indoor_units_connected
     tgt_evap_temp:
       name: Ziel-Verdampfungstemperatur
     outdoor_temp:

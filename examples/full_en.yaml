@@ -102,6 +102,24 @@ daikin_rotex_uart:
   project_git_hash:
     name: Project Git Hash
   entities:
+    outdoor_inv_compressors:
+      name: Outdoor Unit Inverter Compressors
+    outdoor_std_compressors:
+      name: Outdoor Unit Fixed Speed Compressors
+    outdoor_fans:
+      name: Outdoor Unit Fans
+    outdoor_expansion_valves:
+      name: Outdoor Unit Expansion Valves
+    outdoor_4_way_valves:
+      name: Outdoor Unit 4-Way Valves
+    outdoor_crankcase_heaters:
+      name: Outdoor Unit Crankcase Heaters
+    outdoor_solenoid_valves:
+      name: Outdoor Unit Solenoid Valves
+    indoor_units_max:
+      name: Indoor Units Max
+    indoor_units_connected:
+      name: Indoor Units Connected
     mode_of_operating:
       name: Mode of Operating (UART)
     t_liq:

@@ -139,6 +139,10 @@ public:
 
     virtual void update(uint32_t millis) {}
 
+    /// Whether the entry has an I protocol layout; entries for the S protocol only are never read on I devices.
+    void set_i_protocol(bool value) { m_has_i_protocol = value; }
+    bool has_i_protocol() const { return m_has_i_protocol; }
+
     bool out_of_frame_reported() const { return m_out_of_frame_reported; }
     void set_out_of_frame_reported() { m_out_of_frame_reported = true; }
 
@@ -149,6 +153,7 @@ protected:
     TEntityArguments m_config;
     TEntityArguments m_config_s;
     bool m_out_of_frame_reported = false;
+    bool m_has_i_protocol = true;
 
 private:
     std::shared_ptr<TRequest> m_pRequest;
@@ -168,8 +173,7 @@ inline bool TEntity::is_s_active() const {
 }
 
 inline bool TEntity::is_i_active() const {
-    // registry 0: the entry has no I layout (S protocol only), never read on I devices
-    return TProtocolManager::getInstance().is_i_active() && m_config.registryID != 0;
+    return TProtocolManager::getInstance().is_i_active() && has_i_protocol();
 }
 
 inline bool TEntity::is_active() const {

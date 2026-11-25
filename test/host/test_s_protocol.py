@@ -113,9 +113,9 @@ async def test_i_device_is_detected_as_i(device):
 
 
 async def test_s_only_entity_is_not_read_on_i_device(device):
-    # dhw_priority has no I layout: no request for it, no value
+    # dhw_priority has no I layout: never decoded (not even from registry 0x00, which is a real one), no value
     await device.wait_state("Spreizung", "3.0")
+    await device.wait_requests(0x00)  # a frame of registry 0x00 was handled
     await device.wait_requests(0x61)  # one more round
-    assert 0x00 not in device.hpsu.requests
     assert device.states.get("Vorrang Warmwasser", UNKNOWN) == UNKNOWN
-    assert not any("count:" in line and " 0x00:" in line for line in device.log)
+    assert not any("dhw_priority" in line for line in device.log)

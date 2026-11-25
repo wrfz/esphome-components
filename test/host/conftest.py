@@ -88,6 +88,7 @@ def tv_tr(tv: float, tr: float) -> bytes:
 def default_frames() -> dict[int, bytes]:
     """A heating HPSU: Tv 29.7 °C, Tr 26.7 °C, outside 1.5 °C, ..."""
     return {
+        0x00: bytes.fromhex("40 00 0E 04 01 00 01 01 01 00 02 01 01 04 39 68"),  # equipment of a Rotex HPSU
         0x10: i_frame(0x10, payload(16, o6=le16(18.7, 10 * 2.56))),  # tgt_evap_temp (raw / 2.56 in tenths)
         0x20: i_frame(0x20, payload(17, o0=le16(1.5))),              # outdoor_temp
         0x21: i_frame(0x21, payload(6, o0=le16(3.5))),               # inv_prim_current

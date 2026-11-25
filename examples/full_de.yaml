@@ -102,6 +102,24 @@ daikin_rotex_uart:
   project_git_hash:
     name: Project Git Hash
   entities:
+    outdoor_inv_compressors:
+      name: Außengerät Inverter-Verdichter
+    outdoor_std_compressors:
+      name: Außengerät Festdrehzahl-Verdichter
+    outdoor_fans:
+      name: Außengerät Lüfter
+    outdoor_expansion_valves:
+      name: Außengerät Expansionsventile
+    outdoor_4_way_valves:
+      name: Außengerät 4-Wege-Ventile
+    outdoor_crankcase_heaters:
+      name: Außengerät Kurbelwannenheizungen
+    outdoor_solenoid_valves:
+      name: Außengerät Magnetventile
+    indoor_units_max:
+      name: Innengeräte maximal
+    indoor_units_connected:
+      name: Innengeräte angeschlossen
     mode_of_operating:
       name: Betriebsart (UART)
     t_liq:

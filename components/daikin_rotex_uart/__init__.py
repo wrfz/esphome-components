@@ -106,6 +106,114 @@ def get_fan_divider():
 
 sensor_configuration = [
     {
+        # Equipment of the outdoor unit, registry 0x00 byte 1: number of inverter compressors
+        "type": "sensor",
+        "name": "outdoor_inv_compressors",
+        "registryID": 0x00,
+        "offset": 1,
+        "signed": False,
+        "dataSize": 1,
+        "accuracy_decimals": 0,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+        "icon": "mdi:heat-pump-outline"
+    },
+    {
+        # Equipment of the outdoor unit, registry 0x00 byte 2: number of fixed speed compressors
+        "type": "sensor",
+        "name": "outdoor_std_compressors",
+        "registryID": 0x00,
+        "offset": 2,
+        "signed": False,
+        "dataSize": 1,
+        "accuracy_decimals": 0,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+        "icon": "mdi:heat-pump-outline"
+    },
+    {
+        # Equipment of the outdoor unit, registry 0x00 byte 3: number of fans
+        "type": "sensor",
+        "name": "outdoor_fans",
+        "registryID": 0x00,
+        "offset": 3,
+        "signed": False,
+        "dataSize": 1,
+        "accuracy_decimals": 0,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+        "icon": "mdi:fan"
+    },
+    {
+        # Equipment of the outdoor unit, registry 0x00 byte 4: number of expansion valves
+        "type": "sensor",
+        "name": "outdoor_expansion_valves",
+        "registryID": 0x00,
+        "offset": 4,
+        "signed": False,
+        "dataSize": 1,
+        "accuracy_decimals": 0,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+        "icon": "mdi:pipe-valve"
+    },
+    {
+        # Equipment of the outdoor unit, registry 0x00 byte 5: number of 4-way valves
+        "type": "sensor",
+        "name": "outdoor_4_way_valves",
+        "registryID": 0x00,
+        "offset": 5,
+        "signed": False,
+        "dataSize": 1,
+        "accuracy_decimals": 0,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+        "icon": "mdi:numeric-4-circle-outline"
+    },
+    {
+        # Equipment of the outdoor unit, registry 0x00 byte 6: number of crankcase heaters
+        "type": "sensor",
+        "name": "outdoor_crankcase_heaters",
+        "registryID": 0x00,
+        "offset": 6,
+        "signed": False,
+        "dataSize": 1,
+        "accuracy_decimals": 0,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+        "icon": "mdi:heating-coil"
+    },
+    {
+        # Equipment of the outdoor unit, registry 0x00 byte 7: number of solenoid valves
+        "type": "sensor",
+        "name": "outdoor_solenoid_valves",
+        "registryID": 0x00,
+        "offset": 7,
+        "signed": False,
+        "dataSize": 1,
+        "accuracy_decimals": 0,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+        "icon": "mdi:valve"
+    },
+    {
+        # Equipment of the outdoor unit, registry 0x00 byte 8: number of indoor units the outdoor unit can serve
+        "type": "sensor",
+        "name": "indoor_units_max",
+        "registryID": 0x00,
+        "offset": 8,
+        "signed": False,
+        "dataSize": 1,
+        "accuracy_decimals": 0,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+        "icon": "mdi:home-import-outline"
+    },
+    {
+        # Equipment of the outdoor unit, registry 0x00 byte 9: number of indoor units connected
+        "type": "sensor",
+        "name": "indoor_units_connected",
+        "registryID": 0x00,
+        "offset": 9,
+        "signed": False,
+        "dataSize": 1,
+        "accuracy_decimals": 0,
+        "entity_category": ENTITY_CATEGORY_DIAGNOSTIC,
+        "icon": "mdi:home-import-outline"
+    },
+    {
         "type": "binary_sensor",
         "name": "press_eq", # Druckausgleich
         "registryID": 0x10,
@@ -597,7 +705,8 @@ for sensor_conf in sensor_configuration:
                     unit_of_measurement=(sensor_conf.get("unit_of_measurement", cv.UNDEFINED)),
                     accuracy_decimals=(sensor_conf.get("accuracy_decimals", cv.UNDEFINED)),
                     state_class=(sensor_conf.get("state_class", cv.UNDEFINED)),
-                    icon=(sensor_conf.get("icon", cv.UNDEFINED))
+                    icon=(sensor_conf.get("icon", cv.UNDEFINED)),
+                    entity_category=sensor_conf.get("entity_category", cv.UNDEFINED)
                 ),
             })
         case "binary_sensor":
@@ -611,7 +720,8 @@ for sensor_conf in sensor_configuration:
             entity_schemas.update({
                 cv.Optional(name): text_sensor.text_sensor_schema(
                     UartTextSensor,
-                    icon=sensor_conf.get("icon", cv.UNDEFINED)
+                    icon=sensor_conf.get("icon", cv.UNDEFINED),
+                    entity_category=sensor_conf.get("entity_category", cv.UNDEFINED)
                 )
             })
 
@@ -757,7 +867,7 @@ async def to_code(config):
                 return [
                     entity,
                     name,
-                    conf.get("registryID", 0),  # 0: no layout for this protocol (entity inactive)
+                    conf.get("registryID", 0),
                     conf.get("offset", 0),
                     conf.get("signed", defaults["signed"]),
                     conf.get("dataSize", defaults["dataSize"]),
@@ -770,6 +880,7 @@ async def to_code(config):
             i_args, i_str_map = build_args(sens_conf, {"signed": True, "dataSize": 0})
             i_args.extend([await handle_lambda(sens_conf), "handle_lambda" in sens_conf])
             cg.add(entity.set_entity(i_args))
+            cg.add(entity.set_i_protocol("registryID" in sens_conf))
             if i_str_map:
                 cg.add(entity.set_map(i_str_map))
 

@@ -121,3 +121,16 @@ async def test_binary_value_in_log(device):
     # binary values as on/off in the RX line
     await device.wait_state("Umwaelzpumpe", "True")
     await device.wait_log(0, "circulation_pump: on")
+
+
+async def test_outdoor_equipment(device):
+    # 0x00 of a Rotex HPSU: 1 inverter compressor, 1 fan, 1 expansion valve, 1 4-way valve, 2 solenoid valves
+    await device.wait_state("indoor_units_connected", "1.0")
+    assert {name: device.states.get(name) for name in (
+        "outdoor_inv_compressors", "outdoor_std_compressors", "outdoor_fans", "outdoor_expansion_valves",
+        "outdoor_4_way_valves", "outdoor_crankcase_heaters", "outdoor_solenoid_valves", "indoor_units_max",
+    )} == {
+        "outdoor_inv_compressors": "1.0", "outdoor_std_compressors": "0.0", "outdoor_fans": "1.0",
+        "outdoor_expansion_valves": "1.0", "outdoor_4_way_valves": "1.0", "outdoor_crankcase_heaters": "0.0",
+        "outdoor_solenoid_valves": "2.0", "indoor_units_max": "1.0",
+    }
