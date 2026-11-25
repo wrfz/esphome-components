@@ -234,6 +234,17 @@ sensor_configuration = [
         "icon": "mdi:sun-snowflake-variant"
     },
     {
+        # Startup control of the outdoor unit after a compressor start, registry 0x10 byte 1 bit 5
+        "type": "binary_sensor",
+        "name": "startup_control",
+        "registryID": 0x10,
+        "offset": 1,
+        "handle_lambda": """
+            return (data[0] & 0x20) > 0;
+        """,
+        "icon": "mdi:play-circle-outline"
+    },
+    {
         "type": "sensor",
         "name": "tgt_evap_temp",
         "registryID": 0x10,
@@ -484,7 +495,7 @@ sensor_configuration = [
         },
     },
     {
-        # Heat sink temperature of the inverter, registry 0x20 bytes 12-13
+        # Heat sink temperature of the inverter, registry 0x20 bytes 12-13 / Inverterplatine/Kühlkörper im Aussengerät
         "type": "sensor",
         "name": "heat_sink_temp",
         "registryID": 0x20,
@@ -497,17 +508,6 @@ sensor_configuration = [
         "unit_of_measurement": UNIT_CELSIUS,
         "accuracy_decimals": 1,
         "state_class": STATE_CLASS_MEASUREMENT
-    },
-    {
-        # Startup control of the outdoor unit after a compressor start, registry 0x10 byte 1 bit 5
-        "type": "binary_sensor",
-        "name": "startup_control",
-        "registryID": 0x10,
-        "offset": 1,
-        "handle_lambda": """
-            return (data[0] & 0x20) > 0;
-        """,
-        "icon": "mdi:play-circle-outline"
     },
     {
         # Request of the indoor unit (thermostat on), registry 0x60 byte 2 bit 3
