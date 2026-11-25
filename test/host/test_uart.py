@@ -101,7 +101,7 @@ async def test_4_way_valve(device):
     await device.wait_log(start, "4_way_valve: Heizen")
 
     device.hpsu.frames[0x30] = REAL_0X30_DEFROST
-    await device.wait_state("4-Wege-Ventil", "Umkehr")
+    await device.wait_state("4-Wege-Ventil", "Kühlen")
 
 
 async def test_offset_beyond_payload_gives_no_value(start_device, hpsu):

@@ -429,7 +429,7 @@ sensor_configuration = [
         "registryID": 0x30,
         "offset": 7,
         "map": {
-            0x00: delayed_translate("reversed"),
+            0x00: delayed_translate("cooling"),  # also while defrosting
             0x01: delayed_translate("heating"),
         },
         "handle_lambda": """
