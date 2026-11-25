@@ -178,7 +178,7 @@ async def test_subcooling_and_superheat(device):
     device.hpsu.frames[0x20] = refrigerant_0x20(discharge=62.0, pressure_bar_g=18.0)
     device.hpsu.frames[0x61] = liquid_0x61(29.7)
     device.hpsu.frames[0x30] = REAL_0X30_HEATING
-    await device.wait_state("Kaeltemitteltemperatur", "30.2")
+    await device.wait_state("Saettigungstemperatur", "30.2")
     await device.wait_state("Unterkuehlung", "0.5")   # 30.2 - 29.7
     await device.wait_state("Ueberhitzung", "31.8")   # 62.0 - 30.2
 

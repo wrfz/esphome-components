@@ -98,8 +98,8 @@ daikin_rotex_uart:
       name: Spreizung
     t_liq:
       name: Fluessigkeitsleitung
-    t_liq2:
-      name: Kaeltemitteltemperatur
+    saturation_temp:
+      name: Saettigungstemperatur
     temp_after_compr:
       name: Heissgas
     subcooling:

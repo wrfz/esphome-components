@@ -124,10 +124,10 @@ daikin_rotex_uart:
       name: Stato di funzionamento (UART)
     t_liq:
       name: Temperatura linea liquido
-    liq_pressure:
+    refrigerant_pressure:
       name: Pressione refrigerante
-    t_liq2:
-      name: Temperatura refrigerante
+    saturation_temp:
+      name: Temperatura di saturazione
     exv:
       name: Valvola di espansione
     exch_temp:

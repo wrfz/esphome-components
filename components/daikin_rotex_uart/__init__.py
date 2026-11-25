@@ -345,7 +345,7 @@ sensor_configuration = [
     },
     {
         "type": "sensor",
-        "name": "liq_pressure",
+        "name": "refrigerant_pressure",  # pressure at S1NPH (gas line between 4-way valve and condenser)
         "registryID": 0x20,
         "offset": 14,
         "signed": True,
@@ -359,7 +359,7 @@ sensor_configuration = [
     },
     {
         "type": "sensor",
-        "name": "t_liq2",
+        "name": "saturation_temp",  # saturation temperature at the pressure of S1NPH
         "update_entities": ["refrigerant_circuit"],
         "registryID": 0x20,
         "offset": 14,
@@ -879,7 +879,7 @@ entity_schemas.update({
         icon="mdi:thermometer-lines"
     ).extend(),
     # Temperature differences in K, without device class: Home Assistant would convert K like an
-    # absolute temperature. Needs t_liq2 and t_liq (subcooling) or t_liq2 and temp_after_compr (superheat);
+    # absolute temperature. Needs saturation_temp and t_liq (subcooling) or saturation_temp and temp_after_compr (superheat);
     # with inv_freq and 4_way_valve configured, only heating with running compressor gives a value.
     cv.Optional(CONF_SUBCOOLING): sensor.sensor_schema(
         UartSensor,

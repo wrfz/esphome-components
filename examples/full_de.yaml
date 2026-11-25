@@ -124,10 +124,10 @@ daikin_rotex_uart:
       name: Betriebsart (UART)
     t_liq:
       name: Temperatur Flüssigkeitsleitung
-    liq_pressure:
+    refrigerant_pressure:
       name: Kältemitteldruck
-    t_liq2:
-      name: Kältemitteltemperatur
+    saturation_temp:
+      name: Sättigungstemperatur
     exv:
       name: Expansionsventil
     exch_temp:
@@ -135,15 +135,15 @@ daikin_rotex_uart:
     fan_speed:
       name: Ventilatordrehzahl
     temp_after_compr:
-      name: Temperatur nach Kältemittelverdichter
+      name: Heißgastemperatur
     inv_freq:
       name: Kompressor Drehzahl
     inv_prim_current:
-      name: INV Primary Current
+      name: Inverter Primärstrom
     inv_sec_current:
-      name: INV Secondary Current
+      name: Inverter Sekundärstrom
     dhw_temp:
-      name: DHW tank temp
+      name: Warmwassertemperatur
     tv:
       name: TV
     tv_bh:
@@ -151,7 +151,7 @@ daikin_rotex_uart:
     tr:
       name: TR
     outdoor_temp:
-      name: Outdoor Air Temp
+      name: Außentemperatur
     tgt_evap_temp:
       name: Ziel-Verdampfungstemperatur
     tgt_cond_temp:
@@ -212,6 +212,6 @@ daikin_rotex_uart:
     ##############################################################
 
     circulation_pump:
-      name: Umwaelzpumpe
+      name: Umwälzpumpe
     dhw_priority:
       name: Vorrang Warmwasser
