@@ -140,10 +140,16 @@ const std::vector<std::pair<double, double>> r410a_table = {
     { 71.0, 48.67}
 };
 
+// pressureBar: value of the outdoor unit's pressure sensor (S1NPH), which reports gauge pressure (bar(g)).
+// The R410A table holds absolute pressure, so the ambient pressure is added before the lookup.
+// Example: 18.0 bar(g) -> 19.01 bar(a) -> 30.2 degC saturation temperature.
 double UnitConverter::liquid_pressure_to_temperature(double pressureBar) {
     const double divider = 10.0;
+    const double ambientBar = 1.01325;
 
     const auto& table = r410a_table;
+
+    pressureBar += ambientBar;
 
     if (pressureBar < table.front().second || pressureBar > table.back().second) {
         return -1; // Druck außerhalb des gültigen Bereichs!

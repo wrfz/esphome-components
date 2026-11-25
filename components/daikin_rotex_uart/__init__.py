@@ -105,6 +105,7 @@ def get_fan_divider():
     return fan_divider.get(current_outdoor_unit)
 
 sensor_configuration = [
+    # Equipment of the outdoor unit, registry 0x00
     {
         # Equipment of the outdoor unit, registry 0x00 byte 1: number of inverter compressors
         "type": "sensor",
@@ -223,6 +224,7 @@ sensor_configuration = [
         """,
         "icon": "mdi:car-brake-low-pressure"
     },
+    # Outdoor unit status, registry 0x10
     {
         "type": "binary_sensor",
         "name": "defrost_operation", # Abtauvorgang
@@ -282,6 +284,7 @@ sensor_configuration = [
             return static_cast<uint16_t>(static_cast<int16_t>(raw) / 2.56f);
         """
     },
+    # Outdoor unit temperatures and pressures, registry 0x20
     {
         "type": "sensor",
         "name": "outdoor_temp",
@@ -325,6 +328,21 @@ sensor_configuration = [
         "state_class": STATE_CLASS_MEASUREMENT
     },
     {
+        # Heat sink temperature of the inverter, registry 0x20 bytes 12-13 / Inverterplatine/Kühlkörper im Aussengerät
+        "type": "sensor",
+        "name": "heat_sink_temp",
+        "registryID": 0x20,
+        "offset": 12,
+        "signed": True,
+        "dataSize": 2,
+        "endian": Endian.LITTLE,
+        "divider": 10,
+        "device_class": DEVICE_CLASS_TEMPERATURE,
+        "unit_of_measurement": UNIT_CELSIUS,
+        "accuracy_decimals": 1,
+        "state_class": STATE_CLASS_MEASUREMENT
+    },
+    {
         "type": "sensor",
         "name": "liq_pressure",
         "registryID": 0x20,
@@ -356,6 +374,7 @@ sensor_configuration = [
             return UnitConverter::liquid_pressure_to_temperature(pressureBar);
         """
     },
+    # Inverter and electrical measurements, registry 0x21
     {
         "type": "sensor",
         "name": "inv_prim_current",
@@ -398,6 +417,7 @@ sensor_configuration = [
         "accuracy_decimals": 1,
         "state_class": STATE_CLASS_MEASUREMENT
     },
+    # Inverter frequency and fan measurements, registry 0x30
     {
         "type": "sensor",
         "name": "inv_freq",
@@ -448,6 +468,7 @@ sensor_configuration = [
         """,
         "icon": "mdi:numeric-4-circle-outline"
     },
+    # Mode of operation and 4-way valve status, registry 0x60
     {
         "type": "text_sensor",
         "name": "mode_of_operating", # Betriebsart
@@ -493,21 +514,6 @@ sensor_configuration = [
                 0x12: "UseStrdThrm(ht)4",
             },
         },
-    },
-    {
-        # Heat sink temperature of the inverter, registry 0x20 bytes 12-13 / Inverterplatine/Kühlkörper im Aussengerät
-        "type": "sensor",
-        "name": "heat_sink_temp",
-        "registryID": 0x20,
-        "offset": 12,
-        "signed": True,
-        "dataSize": 2,
-        "endian": Endian.LITTLE,
-        "divider": 10,
-        "device_class": DEVICE_CLASS_TEMPERATURE,
-        "unit_of_measurement": UNIT_CELSIUS,
-        "accuracy_decimals": 1,
-        "state_class": STATE_CLASS_MEASUREMENT
     },
     {
         # Request of the indoor unit (thermostat on), registry 0x60 byte 2 bit 3
@@ -618,6 +624,7 @@ sensor_configuration = [
         """,
         "icon": "mdi:heat-wave"
     },
+    # Water flow and pump status, registry 0x60
     {
         "type": "sensor",
         "name": "tv",
@@ -714,6 +721,7 @@ sensor_configuration = [
             "divider": 256,
         },
     },
+    # Circulation pump and DHW priority, registry 0x62 and 0x53
     {
         "type": "binary_sensor",
         "name": "circulation_pump",
